@@ -6,8 +6,7 @@
 	let lockfile_exists = false;
 	let contents = [];
 
-	invoke("read_file", {path:"C:\\Riot Games\\League of Legends\\lockfile"})
-	.then(x => {
+	invoke("read_file", {path:"C:\\Riot Games\\League of Legends\\lockfile"}).then(x => {
 		lockfile_exists = true;
 		console.log(x);
 	})
@@ -15,7 +14,7 @@
 	watchImmediate(
 		"C:\\Riot Games\\League of Legends",
 		(event) => {
-			const { type, paths, attrs } = event;
+			const { type, paths } = event;
 			if (paths.includes("C:\\Riot Games\\League of Legends\\lockfile")) {
 				console.log(event);
 				if (typeof type != "string") {
