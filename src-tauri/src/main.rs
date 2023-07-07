@@ -7,6 +7,8 @@ use std::process;
 use tauri::{CustomMenuItem, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem};
 use tauri::{Manager, SystemTray};
 
+use reqwest::header::AUTHORIZATION;
+
 #[tauri::command]
 fn greet(name: &str) -> String {
 	format!("Hello, {}! You've been greeted from Rust!", name)
@@ -15,6 +17,21 @@ fn greet(name: &str) -> String {
 #[tauri::command]
 fn read_file(path: &str) -> Result<String, String> {
 	return fs::read_to_string(path).map_err(|err| err.to_string());
+}
+
+#[tauri::command]
+async fn http_request(url: &str, auth: &str) -> Result<String, String> {
+	let res = reqwest::Client::builder()
+		.danger_accept_invalid_certs(true)
+		.build()
+		.unwrap()
+		.get(url)
+		.header(AUTHORIZATION, "Basic ".to_owned() + auth)
+		.send()
+		.await
+		.unwrap();
+
+	return res.text().await.map_err(|err| err.to_string());
 }
 
 fn main() {
@@ -29,7 +46,7 @@ fn main() {
 
 	tauri::Builder::default()
 		.system_tray(tray)
-		.invoke_handler(tauri::generate_handler![greet, read_file])
+		.invoke_handler(tauri::generate_handler![greet, read_file, http_request])
 		.plugin(tauri_plugin_fs_watch::init())
 		.on_system_tray_event(|app, event| match event {
 			SystemTrayEvent::LeftClick {
