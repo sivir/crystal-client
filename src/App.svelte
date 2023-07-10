@@ -12,7 +12,7 @@
 	} : {}
 
 	function http_request(url: string) {
-		return invoke("http_request", {url: url, auth: auth}).then(x => x);
+		return invoke("http_request", {url: url, auth: auth});
 	}
 
 	function lockfile_read() {
@@ -30,6 +30,7 @@
 			//invoke("http_request", {url: `https://127.0.0.1:${port}/help`, auth: auth}).then(x => console.log(x));
 			//console.log(
 				http_request(`https://127.0.0.1:${port}/help`).then(x => console.log(x));
+				invoke("start_lcu_websocket", {port: `wss://127.0.0.1:${port}/`, auth: `Basic ${auth}`})
 			//);
 		});
 	}

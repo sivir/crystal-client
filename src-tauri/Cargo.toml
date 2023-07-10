@@ -18,6 +18,13 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 tauri-plugin-fs-watch = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 reqwest = { version = "0.11", features = ["blocking"] }
+tungstenite = "0.19.0"
+native-tls = "0.2.11"
+http = "0.2.8"
+futures = "0.3.26"
+futures-util = "0.3.26"
+tokio-tungstenite = {version= "0.19.0", features = ["native-tls"] }
+tokio = {version="1.25.0", features = ["rt-multi-thread", "rt", "macros"] }
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem
