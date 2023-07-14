@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Greet from "./lib/Greet.svelte";
-	import {watchImmediate} from "tauri-plugin-fs-watch-api";
 	import {invoke} from "@tauri-apps/api/tauri"
+	import {listen} from "@tauri-apps/api/event"
 
 	let lockfile_exists = false;
 	let contents = [];
@@ -16,6 +16,7 @@
 	}
 
 	function lockfile_read() {
+		invoke("process_lockfile");
 		invoke("read_file", {path: "C:\\Riot Games\\League of Legends\\lockfile"}).then(x => {
 			lockfile_exists = true;
 			contents = x.split(":");
@@ -35,23 +36,15 @@
 		});
 	}
 
-	lockfile_read();
-
-	watchImmediate("C:\\Riot Games\\League of Legends", (event) => {
-			const {type, paths} = event;
-			if (paths.includes("C:\\Riot Games\\League of Legends\\lockfile")) {
-				//console.log(event);
-				if (typeof type != "string") {
-					if ("create" in type) {
-						lockfile_read();
-					} else if ("remove" in type) {
-						lockfile_exists = false;
-					}
-				}
-			}
-		},
-		{recursive: true}
-	);
+	invoke("async_watch");
+	listen("lockfile", x => {
+		const payload = x.payload;
+		console.log(payload);
+		if (payload == "create") {
+			invoke("process_lockfile");
+		}
+	});
+	invoke("process_lockfile");
 </script>
 
 <main class="container">

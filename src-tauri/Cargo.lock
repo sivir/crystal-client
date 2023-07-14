@@ -446,10 +446,12 @@ dependencies = [
 name = "crystal"
 version = "0.0.0"
 dependencies = [
+ "base64 0.21.2",
  "futures",
  "futures-util",
  "http",
  "native-tls",
+ "notify",
  "reqwest",
  "serde",
  "serde_json",
