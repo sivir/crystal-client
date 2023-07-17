@@ -1,7 +1,8 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::{fs, time, process, path::Path, sync::Mutex};
+use std::{fs, time, process, path::Path};
+use tokio::sync::Mutex;
 
 use tauri::{AppHandle, CustomMenuItem, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem};
 use tauri::{Manager, SystemTray};
@@ -21,19 +22,22 @@ fn greet(name: &str) -> String {
 }
 
 #[tauri::command]
-fn read_file(state : tauri::State<Data>) -> Result<String, String> {
-	let data = state.0.lock().unwrap();
+async fn read_file(state : tauri::State<'_, Data>) -> Result<String, String> {
+	let data = state.0.lock().await;
 	return fs::read_to_string(format!("{}lockfile", data.install_dir)).map_err(|err| err.to_string());
 }
 
 #[tauri::command]
-fn process_lockfile(state : tauri::State<Data>) {
-	let mut data = state.0.lock().unwrap();
+async fn process_lockfile(app: AppHandle, state: tauri::State<'_, Data>) -> Result<(), ()> {
+	let mut data = state.0.lock().await;
+	println!("pro");
 	let lockfile_dir = format!("{}lockfile", data.install_dir);
 	println!("{}", lockfile_dir);
 	match fs::read_to_string(lockfile_dir) {
 		Ok(raw_contents) => {
 			data.lockfile = true;
+			app.emit_all("lockfile", "create").unwrap();
+			println!("filel found");
 			let contents = raw_contents.split(":").collect::<Vec<_>>();
 			data.port = contents[2].to_string();
 			let auth = format!("riot:{}", contents[3]);
@@ -42,17 +46,19 @@ fn process_lockfile(state : tauri::State<Data>) {
 		}
 		Err(_) => {
 			data.lockfile = false;
+			app.emit_all("lockfile", "remove").unwrap();
 			println!("file not found");
 		}
 	};
+	Ok(())
 }
 
 #[derive(Debug)]
 struct InnerData {
-	lockfile : bool,
-	install_dir : String,
-	port : String,
-	auth : String,
+	lockfile : bool, // whether the lockfile exists
+	install_dir : String, // installation directory of the game (folder name including end backslash)
+	port : String, // port for websocket and http requests
+	auth : String, // auth string, still requires "Basic" added to it for header auth
 }
 
 impl Default for InnerData {
@@ -69,32 +75,41 @@ impl Default for InnerData {
 struct Data(Mutex<InnerData>);
 
 #[tauri::command]
-async fn http_request(url: &str, auth: &str) -> Result<String, String> {
+async fn http_retry(endpoint: &str, state: tauri::State<'_, Data>) -> Result<String, String> {
+	let data = state.0.lock().await;
+	let url = format!("https://127.0.0.1:{}/{}", data.port, endpoint);
+
 	let client = reqwest::Client::builder()
 		.danger_accept_invalid_certs(true)
 		.build()
 		.unwrap();
 	loop {
 		let request = client
-			.get(url)
-			.header(AUTHORIZATION, format!("Basic {auth}"));
+			.get(url.as_str())
+			.header(AUTHORIZATION, format!("Basic {}", data.auth));
 		match request.send().await {
 			Ok(response) => {return response.text().await.map_err(|err| err.to_string());}
-			Err(_) => {std::thread::sleep(time::Duration::from_millis(1000))}
+			Err(_) => std::thread::sleep(time::Duration::from_millis(1000))
 		};
 	}
 }
 
 #[tauri::command]
-async fn start_lcu_websocket(port: &str, auth: &str /*endpoints: &[String]*/, state: tauri::State<'_, Data>) -> Result<(), String> {
+async fn start_lcu_websocket(/*endpoints: &[String]*/ state: tauri::State<'_, Data>) -> Result<(), String> {
+	let data = state.0.lock().await;
+	let port = &data.port;
+	let auth_string = &data.auth;
+	let auth = format!("Basic {}", auth_string);
+	let url = format!("wss://127.0.0.1:{}", port);
 	loop {
 		let tls_connector = native_tls::TlsConnector::builder()
 			.danger_accept_invalid_certs(true).build().unwrap();
 		let connector = tokio_tungstenite::Connector::NativeTls(tls_connector);
-		let mut request = (port).into_client_request().unwrap();
+		let mut request = url.clone().into_client_request().unwrap();
 		request.headers_mut().insert(AUTHORIZATION, auth.parse().unwrap());
 		match tokio_tungstenite::connect_async_tls_with_config(request,
-		                                                       Some(WebSocketConfig::default()), false,
+		                                                       Some(WebSocketConfig::default()),
+		                                                       false,
 		                                                       Some(connector)).await {
 			Ok(connection_response) => {
 				let (mut socket, _) = connection_response;
@@ -119,7 +134,7 @@ async fn start_lcu_websocket(port: &str, auth: &str /*endpoints: &[String]*/, st
 				println!("disconnected!");
 				return Ok(());
 			}
-			Err(_) => {std::thread::sleep(time::Duration::from_millis(1000))}
+			Err(_) => std::thread::sleep(time::Duration::from_millis(1000))
 		}
 	}
 }
@@ -139,19 +154,12 @@ fn async_watcher() -> notify::Result<(RecommendedWatcher, Receiver<notify::Resul
 	Ok((watcher, rx))
 }
 
-fn dd(state : tauri::State<Data>) -> String {
-	let asdf = state.0.lock().unwrap();
-	return asdf.install_dir.clone();
-}
-
-#[derive(Clone, serde::Serialize)]
-struct Payload {
-	message: String,
-}
-
 #[tauri::command]
 async fn async_watch(state: tauri::State<'_, Data>, app_handle: AppHandle) -> Result<(), ()> {
-	let path = dd(state);
+	let data = state.0.lock().await;
+	let path = data.install_dir.clone();
+	drop(data);
+
 	let (mut watcher, mut rx) = async_watcher().unwrap();
 
 	watcher.watch(Path::new(&path), RecursiveMode::NonRecursive).unwrap();
@@ -226,7 +234,7 @@ fn main() {
 	tauri::Builder::default()
 		.manage(Data(Mutex::new(InnerData::default())))
 		.system_tray(tray)
-		.invoke_handler(tauri::generate_handler![greet, read_file, http_request, start_lcu_websocket, process_lockfile, async_watch])
+		.invoke_handler(tauri::generate_handler![greet, read_file, http_retry, start_lcu_websocket, process_lockfile, async_watch])
 		.plugin(tauri_plugin_fs_watch::init())
 		.on_system_tray_event(handle_tray_event)
 		.on_window_event(|event| match event.event() {

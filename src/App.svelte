@@ -4,46 +4,22 @@
 	import {listen} from "@tauri-apps/api/event"
 
 	let lockfile_exists = false;
-	let contents = [];
-	let port, prefix, auth;
 
 	$: lockfile_exists ? () => {
 
 	} : {}
 
-	function http_request(url: string) {
-		return invoke("http_request", {url: url, auth: auth});
-	}
-
-	function lockfile_read() {
-		invoke("process_lockfile");
-		invoke("read_file", {path: "C:\\Riot Games\\League of Legends\\lockfile"}).then(x => {
-			lockfile_exists = true;
-			contents = x.split(":");
-			//console.log(contents);
-
-			port = contents[2];
-			const password = contents[3];
-			prefix = contents[4];
-
-			auth = btoa(`riot:${password}`);
-
-			//invoke("http_request", {url: `https://127.0.0.1:${port}/help`, auth: auth}).then(x => console.log(x));
-			//console.log(
-				http_request(`https://127.0.0.1:${port}/help`).then(x => console.log(x));
-				invoke("start_lcu_websocket", {port: `wss://127.0.0.1:${port}/`, auth: `Basic ${auth}`})
-			//);
-		});
-	}
-
 	invoke("async_watch");
 	listen("lockfile", x => {
 		const payload = x.payload;
 		console.log(payload);
-		if (payload == "create") {
+		if (payload == "create" && lockfile_exists === false) {
+			invoke("http_retry", {endpoint: "help"}).then(x => console.log(x));
 			invoke("process_lockfile");
 		}
+		lockfile_exists = payload == "create";
 	});
+	console.log("proc");
 	invoke("process_lockfile");
 </script>
 
