@@ -17,13 +17,16 @@
 				"all": false,
 				"open": true
 			},
-			"fs": {
-				"exists": true,
-				"scope": ["$DOCUMENT/../../../Riot Games/League of Legends/*"]
-			},
-			"http": {
-				"all": true,
-				"scope": ["https://*"]
+			"window": {
+				"all": false,
+				"close": true,
+				"hide": true,
+				"show": true,
+				"maximize": true,
+				"minimize": true,
+				"unmaximize": true,
+				"unminimize": true,
+				"startDragging": true
 			}
 		},
 		"bundle": {
@@ -51,7 +54,8 @@
 				"resizable": true,
 				"title": "crystal",
 				"width": 800,
-				"height": 600
+				"height": 600,
+				"decorations": false
 			}
 		]
 	}

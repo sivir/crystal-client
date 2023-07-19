@@ -24,7 +24,9 @@ fn greet(name: &str) -> String {
 #[tauri::command]
 async fn read_file(state : tauri::State<'_, Data>) -> Result<String, String> {
 	let data = state.0.lock().await;
-	return fs::read_to_string(format!("{}lockfile", data.install_dir)).map_err(|err| err.to_string());
+	let path = data.install_dir.clone();
+	drop(data);
+	return fs::read_to_string(format!("{}lockfile", path)).map_err(|err| err.to_string());
 }
 
 #[tauri::command]
@@ -77,7 +79,10 @@ struct Data(Mutex<InnerData>);
 #[tauri::command]
 async fn http_retry(endpoint: &str, state: tauri::State<'_, Data>) -> Result<String, String> {
 	let data = state.0.lock().await;
-	let url = format!("https://127.0.0.1:{}/{}", data.port, endpoint);
+	let port = data.port.clone();
+	let auth = data.auth.clone();
+	drop(data);
+	let url = format!("https://127.0.0.1:{port}/{endpoint}");
 
 	let client = reqwest::Client::builder()
 		.danger_accept_invalid_certs(true)
@@ -86,21 +91,23 @@ async fn http_retry(endpoint: &str, state: tauri::State<'_, Data>) -> Result<Str
 	loop {
 		let request = client
 			.get(url.as_str())
-			.header(AUTHORIZATION, format!("Basic {}", data.auth));
+			.header(AUTHORIZATION, format!("Basic {auth}"));
 		match request.send().await {
-			Ok(response) => {return response.text().await.map_err(|err| err.to_string());}
+			Ok(response) => return response.text().await.map_err(|err| err.to_string()),
 			Err(_) => std::thread::sleep(time::Duration::from_millis(1000))
 		};
 	}
 }
 
 #[tauri::command]
-async fn start_lcu_websocket(/*endpoints: &[String]*/ state: tauri::State<'_, Data>) -> Result<(), String> {
+async fn start_lcu_websocket(endpoints: Vec<&str>, state: tauri::State<'_, Data>) -> Result<(), String> {
 	let data = state.0.lock().await;
-	let port = &data.port;
-	let auth_string = &data.auth;
-	let auth = format!("Basic {}", auth_string);
-	let url = format!("wss://127.0.0.1:{}", port);
+	let port = data.port.clone();
+	let auth_string = data.auth.clone();
+	drop(data);
+
+	let auth = format!("Basic {auth_string}");
+	let url = format!("wss://127.0.0.1:{port}/");
 	loop {
 		let tls_connector = native_tls::TlsConnector::builder()
 			.danger_accept_invalid_certs(true).build().unwrap();
@@ -115,18 +122,21 @@ async fn start_lcu_websocket(/*endpoints: &[String]*/ state: tauri::State<'_, Da
 				let (mut socket, _) = connection_response;
 				println!("Connected");
 
-				let message = "[5, \"OnJsonApiEvent\"]";
-				socket.send(Message::Text(message.to_owned())).await.unwrap();
+				for endpoint in endpoints.iter() {
+					let message = format!("[5, \"{}\"]", endpoint);
+					socket.send(Message::Text(message.to_owned())).await.unwrap();
+				}
+
 				'outer: loop {
 					while let Some(msg) = socket.next().await {
 						match msg {
 							Ok(_) => {
 								let msg = msg.unwrap();
 								if msg.is_text() || msg.is_binary() {
-									println!("{}", msg);
+									println!("{msg}");
 								}
 							}
-							Err(_) => { break 'outer }
+							Err(_) => break 'outer
 						}
 
 					}
@@ -171,10 +181,16 @@ async fn async_watch(state: tauri::State<'_, Data>, app_handle: AppHandle) -> Re
 					match event.kind {
 						EventKind::Create(_) => {
 							app_handle.emit_all("lockfile", "create").unwrap();
+							let mut data = state.0.lock().await;
+							data.lockfile = true;
+							drop(data);
 							println!("create!");
 						}
 						EventKind::Remove(_) => {
 							println!("remove!");
+							let mut data = state.0.lock().await;
+							data.lockfile = false;
+							drop(data);
 							app_handle.emit_all("lockfile", "remove").unwrap();
 						}
 						_ => {}

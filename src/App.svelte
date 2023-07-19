@@ -2,12 +2,14 @@
 	import Greet from "./lib/Greet.svelte";
 	import {invoke} from "@tauri-apps/api/tauri"
 	import {listen} from "@tauri-apps/api/event"
+	import { appWindow } from '@tauri-apps/api/window'
 
 	let lockfile_exists = false;
 
-	$: lockfile_exists ? () => {
-
-	} : {}
+	let close, minimize, maximize;
+	$: if (close) close.addEventListener("click", () => appWindow.hide());
+	$: if (minimize) minimize.addEventListener("click", () => appWindow.minimize());
+	$: if (maximize) maximize.addEventListener("click", () => appWindow.toggleMaximize());
 
 	invoke("async_watch");
 	listen("lockfile", x => {
@@ -16,6 +18,7 @@
 		if (payload == "create" && lockfile_exists === false) {
 			invoke("http_retry", {endpoint: "help"}).then(x => console.log(x));
 			invoke("process_lockfile");
+			invoke("start_lcu_websocket", {endpoints: ["OnJsonApiEvent_lol-gameflow_v1_gameflow-phase"]})
 		}
 		lockfile_exists = payload == "create";
 	});
@@ -24,6 +27,24 @@
 </script>
 
 <main class="container">
+	<div data-tauri-drag-region class="titlebar">
+		<div class="titlebar-button" id="minimize" bind:this={minimize}>
+			<img
+					src="https://api.iconify.design/mdi:window-minimize.svg"
+					alt="minimize"
+			/>
+		</div>
+		<div class="titlebar-button" id="maximize" bind:this={maximize}>
+			<img
+					src="https://api.iconify.design/mdi:window-maximize.svg"
+					alt="maximize"
+			/>
+		</div>
+		<div class="titlebar-button" id="close" bind:this={close}>
+			<img src="https://api.iconify.design/mdi:close.svg" alt="close" />
+		</div>
+	</div>
+
 	<h1>Welcome to Tauri!</h1>
 
 	<div class="row">
@@ -46,6 +67,28 @@
 </main>
 
 <style>
+	.titlebar {
+		height: 30px;
+		background: #329ea3;
+		user-select: none;
+		display: flex;
+		justify-content: flex-end;
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+	}
+	.titlebar-button {
+		display: inline-flex;
+		justify-content: center;
+		align-items: center;
+		width: 30px;
+		height: 30px;
+	}
+	.titlebar-button:hover {
+		background: #5bbec3;
+	}
+
 	.logo.vite:hover {
 		filter: drop-shadow(0 0 2em #747bff);
 	}
