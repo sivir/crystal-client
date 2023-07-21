@@ -3,25 +3,34 @@
 	import {invoke} from "@tauri-apps/api/tauri"
 	import {listen} from "@tauri-apps/api/event"
 	import { appWindow } from '@tauri-apps/api/window'
+	import {http_request} from "./lib/lib";
+	import ChallengeTable from "./lib/ChallengeTable.svelte";
 
 	let lockfile_exists = false;
+	let gameflow = "None";
 
 	let close, minimize, maximize;
 	$: if (close) close.addEventListener("click", () => appWindow.hide());
 	$: if (minimize) minimize.addEventListener("click", () => appWindow.minimize());
 	$: if (maximize) maximize.addEventListener("click", () => appWindow.toggleMaximize());
 
+	console.log("stuff");
+
 	invoke("async_watch");
 	listen("lockfile", x => {
 		const payload = x.payload;
 		console.log(payload);
 		if (payload == "create" && lockfile_exists === false) {
-			invoke("http_retry", {endpoint: "help"}).then(x => console.log(x));
+			http_request("help", console.log);
 			invoke("process_lockfile");
 			invoke("start_lcu_websocket", {endpoints: ["OnJsonApiEvent_lol-gameflow_v1_gameflow-phase"]})
 		}
 		lockfile_exists = payload == "create";
 	});
+	listen("gameflow", x => {
+		console.log(x);
+		gameflow = x.payload.toString();
+	})
 	console.log("proc");
 	invoke("process_lockfile");
 </script>
@@ -59,11 +68,13 @@
 		</a>
 	</div>
 
-	<p>lockfile {lockfile_exists ? "exists" : "doesn't exist"}</p>
+	<p>lockfile {lockfile_exists ? "exists" : "doesn't exist"}. {gameflow}</p>
 
 	<div class="row">
 		<Greet/>
 	</div>
+
+	<ChallengeTable />
 </main>
 
 <style>

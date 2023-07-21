@@ -15,6 +15,7 @@ use tungstenite::Message;
 use base64::{Engine as _, engine::general_purpose};
 use futures::{SinkExt, channel::mpsc::{channel, Receiver}};
 use notify::{Config, Event, EventKind, RecommendedWatcher, RecursiveMode, Watcher};
+use serde_json::Value;
 
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -100,7 +101,7 @@ async fn http_retry(endpoint: &str, state: tauri::State<'_, Data>) -> Result<Str
 }
 
 #[tauri::command]
-async fn start_lcu_websocket(endpoints: Vec<&str>, state: tauri::State<'_, Data>) -> Result<(), String> {
+async fn start_lcu_websocket(endpoints: Vec<&str>, app_handle: AppHandle, state: tauri::State<'_, Data>) -> Result<(), String> {
 	let data = state.0.lock().await;
 	let port = data.port.clone();
 	let auth_string = data.auth.clone();
@@ -132,8 +133,12 @@ async fn start_lcu_websocket(endpoints: Vec<&str>, state: tauri::State<'_, Data>
 						match msg {
 							Ok(_) => {
 								let msg = msg.unwrap();
-								if msg.is_text() || msg.is_binary() {
-									println!("{msg}");
+								if msg.is_text() && !msg.to_string().is_empty() {
+									println!("|{msg}|");
+
+									let json: Value = serde_json::from_str(msg.to_string().as_str()).unwrap();
+									println!("{}", json[2]["data"]);
+									app_handle.emit_all("gameflow", json[2]["data"].as_str()).unwrap();
 								}
 							}
 							Err(_) => break 'outer
@@ -251,7 +256,6 @@ fn main() {
 		.manage(Data(Mutex::new(InnerData::default())))
 		.system_tray(tray)
 		.invoke_handler(tauri::generate_handler![greet, read_file, http_retry, start_lcu_websocket, process_lockfile, async_watch])
-		.plugin(tauri_plugin_fs_watch::init())
 		.on_system_tray_event(handle_tray_event)
 		.on_window_event(|event| match event.event() {
 			tauri::WindowEvent::CloseRequested { api, .. } => {
