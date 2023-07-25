@@ -17,10 +17,7 @@ use futures::{SinkExt, channel::mpsc::{channel, Receiver}};
 use notify::{Config, Event, EventKind, RecommendedWatcher, RecursiveMode, Watcher};
 use serde_json::Value;
 
-#[tauri::command]
-fn greet(name: &str) -> String {
-	format!("Hello, {}! You've been greeted from Rust!", name)
-}
+mod greet;
 
 #[tauri::command]
 async fn read_file(state : tauri::State<'_, Data>) -> Result<String, String> {
@@ -62,6 +59,7 @@ struct InnerData {
 	install_dir : String, // installation directory of the game (folder name including end backslash)
 	port : String, // port for websocket and http requests
 	auth : String, // auth string, still requires "Basic" added to it for header auth
+	challenge_data: Value
 }
 
 impl Default for InnerData {
@@ -71,11 +69,30 @@ impl Default for InnerData {
 			install_dir: "C:\\Riot Games\\League of Legends\\".to_string(),
 			port: "".to_string(),
 			auth: "".to_string(),
+			challenge_data: Value::Null
 		}
 	}
 }
 
 struct Data(Mutex<InnerData>);
+
+#[tauri::command]
+async fn update_challenge_data(state: tauri::State<'_, Data>) -> Result<(), ()> {
+	let state1 = state.clone();
+	let res = http_retry("lol", state1).await.unwrap();
+	let mut data = state.0.lock().await;
+	data.challenge_data = serde_json::from_str(res.as_str()).unwrap();
+
+
+	Ok(())
+}
+
+#[tauri::command]
+async fn get_challenge_data(state: tauri::State<'_, Data>) -> Result<Value, String> {
+	let data = state.0.lock().await;
+	let challenge_data = data.challenge_data.clone();
+	return Ok(challenge_data)
+}
 
 #[tauri::command]
 async fn http_retry(endpoint: &str, state: tauri::State<'_, Data>) -> Result<String, String> {
@@ -255,7 +272,7 @@ fn main() {
 	tauri::Builder::default()
 		.manage(Data(Mutex::new(InnerData::default())))
 		.system_tray(tray)
-		.invoke_handler(tauri::generate_handler![greet, read_file, http_retry, start_lcu_websocket, process_lockfile, async_watch])
+		.invoke_handler(tauri::generate_handler![greet::greet, read_file, http_retry, start_lcu_websocket, process_lockfile, async_watch])
 		.on_system_tray_event(handle_tray_event)
 		.on_window_event(|event| match event.event() {
 			tauri::WindowEvent::CloseRequested { api, .. } => {

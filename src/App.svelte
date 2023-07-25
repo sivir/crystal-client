@@ -5,6 +5,7 @@
 	import { appWindow } from '@tauri-apps/api/window'
 	import {http_request} from "./lib/lib";
 	import ChallengeTable from "./lib/ChallengeTable.svelte";
+	import ChampionTable from "./lib/ChampionTable.svelte";
 
 	let lockfile_exists = false;
 	let gameflow = "None";
@@ -74,6 +75,7 @@
 		<Greet/>
 	</div>
 
+	<ChampionTable />
 	<ChallengeTable />
 </main>
 

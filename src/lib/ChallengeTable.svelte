@@ -15,7 +15,7 @@
 
 <main>
 	whee
-	{#each [...Object.entries(challenges)] as [key, val]}
-		<div>{JSON.stringify(val.name)}</div>
+	{#each Object.values(challenges) as challenge}
+		<div>{challenge.name}</div>
 	{/each}
 </main>
