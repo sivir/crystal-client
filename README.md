@@ -1,6 +1,6 @@
 # Crystal Client
 
-In progress app (based off my [previous unfinished Kotlin project](https://github.com/Jeffmagma/crystal)) that allows users to view their challenge progress, mainly to help me learn Rust and Svelte
+In progress app (based off my [not-yet-finished Kotlin project](https://github.com/Jeffmagma/crystal)) that allows users to view their challenge progress, mainly to help me learn Rust and Svelte
 
 Built with Tauri (Rust + Vite + Typescript + Svelte)
 

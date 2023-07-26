@@ -1,23 +1,24 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::{fs, time, process, path::Path};
-use tokio::sync::Mutex;
+use std::{fs, process, time};
 
+use base64::{Engine as _, engine::general_purpose};
+use futures::SinkExt;
+use futures_util::StreamExt;
+use reqwest::header::AUTHORIZATION;
+use serde_json::Value;
 use tauri::{AppHandle, CustomMenuItem, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem};
 use tauri::{Manager, SystemTray};
-
-use reqwest::header::AUTHORIZATION;
-
-use tokio_tungstenite::tungstenite::{protocol::WebSocketConfig, client::IntoClientRequest};
-use futures_util::StreamExt;
+use tokio::sync::Mutex;
+use tokio_tungstenite::tungstenite::{client::IntoClientRequest, protocol::WebSocketConfig};
 use tungstenite::Message;
-use base64::{Engine as _, engine::general_purpose};
-use futures::{SinkExt, channel::mpsc::{channel, Receiver}};
-use notify::{Config, Event, EventKind, RecommendedWatcher, RecursiveMode, Watcher};
-use serde_json::Value;
+
+use data::Data;
 
 mod greet;
+mod file_watcher;
+mod data;
 
 #[tauri::command]
 async fn read_file(state : tauri::State<'_, Data>) -> Result<String, String> {
@@ -52,29 +53,6 @@ async fn process_lockfile(app: AppHandle, state: tauri::State<'_, Data>) -> Resu
 	};
 	Ok(())
 }
-
-#[derive(Debug)]
-struct InnerData {
-	lockfile : bool, // whether the lockfile exists
-	install_dir : String, // installation directory of the game (folder name including end backslash)
-	port : String, // port for websocket and http requests
-	auth : String, // auth string, still requires "Basic" added to it for header auth
-	challenge_data: Value
-}
-
-impl Default for InnerData {
-	fn default() -> Self {
-		InnerData {
-			lockfile: false,
-			install_dir: "C:\\Riot Games\\League of Legends\\".to_string(),
-			port: "".to_string(),
-			auth: "".to_string(),
-			challenge_data: Value::Null
-		}
-	}
-}
-
-struct Data(Mutex<InnerData>);
 
 #[tauri::command]
 async fn update_challenge_data(state: tauri::State<'_, Data>) -> Result<(), ()> {
@@ -171,62 +149,6 @@ async fn start_lcu_websocket(endpoints: Vec<&str>, app_handle: AppHandle, state:
 	}
 }
 
-fn async_watcher() -> notify::Result<(RecommendedWatcher, Receiver<notify::Result<Event>>)> {
-	let (mut tx, rx) = channel(1);
-
-	let watcher = RecommendedWatcher::new(
-		move |res| {
-			futures::executor::block_on(async {
-				tx.send(res).await.unwrap();
-			})
-		},
-		Config::default(),
-	)?;
-
-	Ok((watcher, rx))
-}
-
-#[tauri::command]
-async fn async_watch(state: tauri::State<'_, Data>, app_handle: AppHandle) -> Result<(), ()> {
-	let data = state.0.lock().await;
-	let path = data.install_dir.clone();
-	drop(data);
-
-	let (mut watcher, mut rx) = async_watcher().unwrap();
-
-	watcher.watch(Path::new(&path), RecursiveMode::NonRecursive).unwrap();
-
-	while let Some(res) = rx.next().await {
-		match res {
-			Ok(event) => {
-				if format!("{}lockfile", path).eq(event.paths[0].to_str().unwrap()) {
-					match event.kind {
-						EventKind::Create(_) => {
-							app_handle.emit_all("lockfile", "create").unwrap();
-							let mut data = state.0.lock().await;
-							data.lockfile = true;
-							drop(data);
-							println!("create!");
-						}
-						EventKind::Remove(_) => {
-							println!("remove!");
-							let mut data = state.0.lock().await;
-							data.lockfile = false;
-							drop(data);
-							app_handle.emit_all("lockfile", "remove").unwrap();
-						}
-						_ => {}
-					}
-					println!("changed: {:?}", event)
-				}
-			},
-			Err(e) => println!("watch error: {:?}", e),
-		}
-	}
-
-	Ok(())
-}
-
 fn handle_tray_event(app: &AppHandle, event: SystemTrayEvent) {
 	let window = app.get_window("main").unwrap();
 	match event {
@@ -270,9 +192,9 @@ fn main() {
 	let tray = SystemTray::new().with_menu(tray_menu);
 
 	tauri::Builder::default()
-		.manage(Data(Mutex::new(InnerData::default())))
+		.manage(Data(Mutex::new(data::InnerData::default())))
 		.system_tray(tray)
-		.invoke_handler(tauri::generate_handler![greet::greet, read_file, http_retry, start_lcu_websocket, process_lockfile, async_watch])
+		.invoke_handler(tauri::generate_handler![greet::greet, read_file, http_retry, start_lcu_websocket, process_lockfile, file_watcher::async_watch])
 		.on_system_tray_event(handle_tray_event)
 		.on_window_event(|event| match event.event() {
 			tauri::WindowEvent::CloseRequested { api, .. } => {
