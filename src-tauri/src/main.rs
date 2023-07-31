@@ -56,24 +56,58 @@ async fn process_lockfile(app: AppHandle, state: tauri::State<'_, Data>) -> Resu
 
 #[tauri::command]
 async fn update_challenge_data(state: tauri::State<'_, Data>) -> Result<(), ()> {
-	let state1 = state.clone();
-	let res = http_retry("lol", state1).await.unwrap();
+	let res = http_retry("lol-challenges/v1/challenges/local-player", state.clone()).await.unwrap();
 	let mut data = state.0.lock().await;
-	data.challenge_data = serde_json::from_str(res.as_str()).unwrap();
-
+	data.challenge_data = res;
 
 	Ok(())
 }
 
 #[tauri::command]
-async fn get_challenge_data(state: tauri::State<'_, Data>) -> Result<Value, String> {
-	let data = state.0.lock().await;
-	let challenge_data = data.challenge_data.clone();
-	return Ok(challenge_data)
+async fn update_all_data(app_handle: AppHandle) -> Result<(), ()> {
+	update_summoner_id(app_handle.state()).await.unwrap();
+	update_champion_data(app_handle.state()).await.unwrap();
+	update_challenge_data(app_handle.state()).await.unwrap();
+
+	Ok(())
 }
 
 #[tauri::command]
-async fn http_retry(endpoint: &str, state: tauri::State<'_, Data>) -> Result<String, String> {
+async fn update_summoner_id(state: tauri::State<'_, Data>) -> Result<(), ()> {
+	let res = http_retry("lol-summoner/v1/current-summoner", state.clone()).await.unwrap();
+	let mut data = state.0.lock().await;
+	data.summoner_id = res["summonerId"].to_string();
+
+	Ok(())
+}
+
+#[tauri::command]
+async fn update_champion_data(state: tauri::State<'_, Data>) -> Result<(), ()> {
+	let summoner_id = state.0.lock().await.summoner_id.clone();
+	let endpoint = format!("lol-collections/v1/inventories/{summoner_id}/champion-mastery");
+	let res = http_retry(endpoint.as_str(), state.clone()).await.unwrap();
+	let mut data = state.0.lock().await;
+	data.champion_data = res;
+
+	Ok(())
+}
+
+#[tauri::command]
+async fn get_challenge_data(state: tauri::State<'_, Data>) -> Result<Value, ()> {
+	let data = state.0.lock().await;
+	let challenge_data = data.challenge_data.clone();
+	Ok(challenge_data)
+}
+
+#[tauri::command]
+async fn get_champion_data(state: tauri::State<'_, Data>) -> Result<Value, ()> {
+	let data = state.0.lock().await;
+	let champion_data = data.champion_data.clone();
+	Ok(champion_data)
+}
+
+#[tauri::command]
+async fn http_retry(endpoint: &str, state: tauri::State<'_, Data>) -> Result<Value, String> {
 	let data = state.0.lock().await;
 	let port = data.port.clone();
 	let auth = data.auth.clone();
@@ -89,7 +123,13 @@ async fn http_retry(endpoint: &str, state: tauri::State<'_, Data>) -> Result<Str
 			.get(url.as_str())
 			.header(AUTHORIZATION, format!("Basic {auth}"));
 		match request.send().await {
-			Ok(response) => return response.text().await.map_err(|err| err.to_string()),
+			Ok(response) => {
+				let json = response.json::<Value>().await.unwrap();
+				if json["httpStatus"].is_number() {
+					println!("{}", json["httpStatus"].as_u64().unwrap());
+				}
+				return Ok(json)
+			},
 			Err(_) => std::thread::sleep(time::Duration::from_millis(1000))
 		};
 	}
@@ -194,7 +234,18 @@ fn main() {
 	tauri::Builder::default()
 		.manage(Data(Mutex::new(data::InnerData::default())))
 		.system_tray(tray)
-		.invoke_handler(tauri::generate_handler![greet::greet, read_file, http_retry, start_lcu_websocket, process_lockfile, file_watcher::async_watch])
+		.invoke_handler(tauri::generate_handler![
+			get_challenge_data,
+			get_champion_data,
+			update_all_data,
+			update_challenge_data,
+			greet::greet,
+			read_file,
+			http_retry,
+			start_lcu_websocket,
+			process_lockfile,
+			file_watcher::async_watch
+		])
 		.on_system_tray_event(handle_tray_event)
 		.on_window_event(|event| match event.event() {
 			tauri::WindowEvent::CloseRequested { api, .. } => {

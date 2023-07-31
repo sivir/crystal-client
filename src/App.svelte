@@ -17,22 +17,27 @@
 
 	console.log("stuff");
 
+	$: lockfile_exists ? (() => {
+		http_request("help", console.log);
+		invoke("process_lockfile");
+		invoke("start_lcu_websocket", {endpoints: ["OnJsonApiEvent_lol-gameflow_v1_gameflow-phase"]})
+	})() : (() => {
+
+	})();
+
 	invoke("async_watch");
 	listen("lockfile", x => {
 		const payload = x.payload;
-		console.log(payload);
 		if (payload == "create" && lockfile_exists === false) {
-			http_request("help", console.log);
-			invoke("process_lockfile");
-			invoke("start_lcu_websocket", {endpoints: ["OnJsonApiEvent_lol-gameflow_v1_gameflow-phase"]})
+			lockfile_exists = true;
+		} else if (payload == "remove" && lockfile_exists === true) {
+			lockfile_exists = false;
 		}
-		lockfile_exists = payload == "create";
 	});
 	listen("gameflow", x => {
 		console.log(x);
 		gameflow = x.payload.toString();
 	})
-	console.log("proc");
 	invoke("process_lockfile");
 </script>
 
@@ -75,7 +80,7 @@
 		<Greet/>
 	</div>
 
-	<ChampionTable />
+	<ChampionTable {lockfile_exists}/>
 	<ChallengeTable />
 </main>
 

@@ -37,7 +37,7 @@ pub async fn async_watch(state: tauri::State<'_, Data>, app_handle: AppHandle) -
 			Ok(event) => {
 				if format!("{}lockfile", path).eq(event.paths[0].to_str().unwrap()) {
 					match event.kind {
-						EventKind::Create(_) => {
+						EventKind::Create(_) | EventKind::Modify(_) => {
 							app_handle.emit_all("lockfile", "create").unwrap();
 							let mut data = state.0.lock().await;
 							data.lockfile = true;
