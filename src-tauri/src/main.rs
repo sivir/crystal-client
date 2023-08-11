@@ -31,9 +31,7 @@ async fn read_file(state : tauri::State<'_, Data>) -> Result<String, String> {
 #[tauri::command]
 async fn process_lockfile(app: AppHandle, state: tauri::State<'_, Data>) -> Result<(), ()> {
 	let mut data = state.0.lock().await;
-	println!("pro");
 	let lockfile_dir = format!("{}lockfile", data.install_dir);
-	println!("{}", lockfile_dir);
 	match fs::read_to_string(lockfile_dir) {
 		Ok(raw_contents) => {
 			data.lockfile = true;
@@ -43,7 +41,6 @@ async fn process_lockfile(app: AppHandle, state: tauri::State<'_, Data>) -> Resu
 			data.port = contents[2].to_string();
 			let auth = format!("riot:{}", contents[3]);
 			data.auth = general_purpose::STANDARD.encode(auth);
-			println!("{:?}", data);
 		}
 		Err(_) => {
 			data.lockfile = false;
@@ -65,6 +62,7 @@ async fn update_challenge_data(state: tauri::State<'_, Data>) -> Result<(), ()> 
 
 #[tauri::command]
 async fn update_all_data(app_handle: AppHandle) -> Result<(), ()> {
+	println!("update all data");
 	update_summoner_id(app_handle.state()).await.unwrap();
 	update_champion_data(app_handle.state()).await.unwrap();
 	update_challenge_data(app_handle.state()).await.unwrap();
@@ -107,6 +105,22 @@ async fn get_champion_data(state: tauri::State<'_, Data>) -> Result<Value, ()> {
 }
 
 #[tauri::command]
+async fn http_generic(url: &str) -> Result<Value, ()> {
+	let client = reqwest::Client::builder().build().unwrap();
+	return Ok(client.get(url).send().await.unwrap().json::<Value>().await.unwrap());
+}
+
+#[tauri::command]
+async fn get_champion_map() -> Value {
+	let version_list = http_generic("https://ddragon.leagueoflegends.com/api/versions.json").await.unwrap();
+	let version = version_list[0].as_str().unwrap();
+	// println!("{}", version);
+	let champ_url = format!("https://ddragon.leagueoflegends.com/cdn/{version}/data/en_US/champion.json");
+	let c = http_generic(champ_url.as_str()).await.unwrap();
+	return c;
+}
+
+#[tauri::command]
 async fn http_retry(endpoint: &str, state: tauri::State<'_, Data>) -> Result<Value, String> {
 	let data = state.0.lock().await;
 	let port = data.port.clone();
@@ -126,9 +140,10 @@ async fn http_retry(endpoint: &str, state: tauri::State<'_, Data>) -> Result<Val
 			Ok(response) => {
 				let json = response.json::<Value>().await.unwrap();
 				if json["httpStatus"].is_number() {
-					println!("{}", json["httpStatus"].as_u64().unwrap());
+					std::thread::sleep(time::Duration::from_millis(1000));
+				} else {
+					return Ok(json)
 				}
-				return Ok(json)
 			},
 			Err(_) => std::thread::sleep(time::Duration::from_millis(1000))
 		};
@@ -169,10 +184,7 @@ async fn start_lcu_websocket(endpoints: Vec<&str>, app_handle: AppHandle, state:
 							Ok(_) => {
 								let msg = msg.unwrap();
 								if msg.is_text() && !msg.to_string().is_empty() {
-									println!("|{msg}|");
-
 									let json: Value = serde_json::from_str(msg.to_string().as_str()).unwrap();
-									println!("{}", json[2]["data"]);
 									app_handle.emit_all("gameflow", json[2]["data"].as_str()).unwrap();
 								}
 							}
@@ -244,7 +256,9 @@ fn main() {
 			http_retry,
 			start_lcu_websocket,
 			process_lockfile,
-			file_watcher::async_watch
+			file_watcher::async_watch,
+			http_generic,
+			get_champion_map
 		])
 		.on_system_tray_event(handle_tray_event)
 		.on_window_event(|event| match event.event() {

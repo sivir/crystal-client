@@ -1,5 +1,4 @@
 <script lang="ts">
-	import Greet from "./lib/Greet.svelte";
 	import {invoke} from "@tauri-apps/api/tauri"
 	import {listen} from "@tauri-apps/api/event"
 	import { appWindow } from '@tauri-apps/api/window'
@@ -7,8 +6,16 @@
 	import ChallengeTable from "./lib/ChallengeTable.svelte";
 	import ChampionTable from "./lib/ChampionTable.svelte";
 
+	enum Page {
+		champions, // champion table with mastery
+		challenges, // just a list of challenges
+		globe, // globetrotters + harmony list
+		live, // live lobby then champ select data
+	}
+
 	let lockfile_exists = false;
 	let gameflow = "None";
+	let page = Page.champions;
 
 	let close, minimize, maximize;
 	$: if (close) close.addEventListener("click", () => appWindow.hide());
@@ -25,6 +32,7 @@
 
 	})();
 
+	invoke("process_lockfile");
 	invoke("async_watch");
 	listen("lockfile", x => {
 		const payload = x.payload;
@@ -38,11 +46,13 @@
 		console.log(x);
 		gameflow = x.payload.toString();
 	})
-	invoke("process_lockfile");
 </script>
 
-<main class="container">
+<main>
 	<div data-tauri-drag-region class="titlebar">
+		<div class="titlebar-button">crystal</div>
+
+		<div>
 		<div class="titlebar-button" id="minimize" bind:this={minimize}>
 			<img
 					src="https://api.iconify.design/mdi:window-minimize.svg"
@@ -57,61 +67,75 @@
 		</div>
 		<div class="titlebar-button" id="close" bind:this={close}>
 			<img src="https://api.iconify.design/mdi:close.svg" alt="close" />
+		</div></div>
+	</div>
+
+	<div id="sideways">
+		<div id="sidebar">
+			<button on:click={() => page = Page.challenges}>challenges</button>
+			<button on:click={() => page = Page.champions}>champions</button>
+		</div>
+
+		<div id="main">
+			<p>lockfile {lockfile_exists ? "exists" : "doesn't exist"}. {gameflow}</p>
+			<div class="test" hidden={page !== Page.champions}>
+				<ChampionTable {lockfile_exists}/>
+			</div>
+			<div class="test" hidden={page !== Page.challenges}>
+				<ChallengeTable />
+			</div>
 		</div>
 	</div>
 
-	<h1>Welcome to Tauri!</h1>
-
-	<div class="row">
-		<a href="https://vitejs.dev" target="_blank">
-			<img src="/vite.svg" class="logo vite" alt="Vite Logo"/>
-		</a>
-		<a href="https://tauri.app" target="_blank">
-			<img src="/tauri.svg" class="logo tauri" alt="Tauri Logo"/>
-		</a>
-		<a href="https://svelte.dev" target="_blank">
-			<img src="/svelte.svg" class="logo svelte" alt="Svelte Logo"/>
-		</a>
-	</div>
-
-	<p>lockfile {lockfile_exists ? "exists" : "doesn't exist"}. {gameflow}</p>
-
-	<div class="row">
-		<Greet/>
-	</div>
-
-	<ChampionTable {lockfile_exists}/>
-	<ChallengeTable />
 </main>
 
 <style>
+	.test {
+		max-height: 100%;
+	}
+
+	main {
+		height: 100%;
+		width: 100%;
+		background: red;
+	}
+
+	#sidebar {
+		min-height: 100%;
+		background: #396cd8;
+		width: 200px;
+	}
+
+	#sideways {
+		height: 100%;
+		display: flex;
+	}
+
+	#main {
+		flex-grow: 1;
+	}
+
 	.titlebar {
+		padding-left: 5px;
+		padding-right: 5px;
 		height: 30px;
 		background: #329ea3;
 		user-select: none;
 		display: flex;
-		justify-content: flex-end;
-		position: fixed;
+		justify-content: space-between;
 		top: 0;
 		left: 0;
 		right: 0;
 	}
+
 	.titlebar-button {
 		display: inline-flex;
 		justify-content: center;
 		align-items: center;
-		width: 30px;
 		height: 30px;
 	}
+
 	.titlebar-button:hover {
 		background: #5bbec3;
-	}
-
-	.logo.vite:hover {
-		filter: drop-shadow(0 0 2em #747bff);
-	}
-
-	.logo.svelte:hover {
-		filter: drop-shadow(0 0 2em #ff3e00);
 	}
 </style>
