@@ -36,6 +36,7 @@
 	invoke("async_watch");
 	listen("lockfile", x => {
 		const payload = x.payload;
+		console.log(payload);
 		if (payload == "create" && lockfile_exists === false) {
 			lockfile_exists = true;
 		} else if (payload == "remove" && lockfile_exists === true) {
@@ -86,18 +87,27 @@
 			</div>
 		</div>
 	</div>
-
 </main>
 
 <style>
 	.test {
-		max-height: 100%;
+		height: 100%;
+		overflow: auto;
+	}
+
+	#main {
+		height: 100%;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
 	}
 
 	main {
 		height: 100%;
 		width: 100%;
 		background: red;
+		display: flex;
+		flex-direction: column;
 	}
 
 	#sidebar {
@@ -107,12 +117,10 @@
 	}
 
 	#sideways {
-		height: 100%;
+		flex: 1;
+		overflow: auto;
+		max-height: 100%;
 		display: flex;
-	}
-
-	#main {
-		flex-grow: 1;
 	}
 
 	.titlebar {
@@ -123,9 +131,6 @@
 		user-select: none;
 		display: flex;
 		justify-content: space-between;
-		top: 0;
-		left: 0;
-		right: 0;
 	}
 
 	.titlebar-button {

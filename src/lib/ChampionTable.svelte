@@ -50,9 +50,9 @@
 </script>
 
 <main>
-	west
-	<div id="asdf">
-		<!--
+	<div id="flow">
+		west
+
 		<table>
 			{#each Object.entries(champions) as [id, champion]}
 				<tr>
@@ -61,25 +61,16 @@
 					<td>{champion.mastery_points}</td>
 				</tr>
 			{/each}
-		</table>-->
-		{#each Object.entries(champions) as [id, champion]}
+		</table>
+		<!--{#each Object.entries(champions) as [id, champion]}
 			<div>
 				{champion.name}
 				{champion.mastery_level}
 				{champion.mastery_points}
 			</div>
-		{/each}
+		{/each}-->
 	</div>
 </main>
 
 <style>
-	#asdf {
-		overflow-y: auto;
-	}
-	main {
-		box-sizing: border-box;
-		max-height: inherit;
-		display: flex;
-		flex-direction: column;
-	}
 </style>
