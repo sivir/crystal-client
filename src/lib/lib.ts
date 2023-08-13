@@ -1,5 +1,17 @@
-import {invoke} from "@tauri-apps/api/tauri";
-
-export function http_request(endpoint: string, handler: (x: string) => void) {
-	invoke("http_retry", {endpoint: endpoint}).then(handler);
+type Challenge = {
+    name: string,
+    points: number;
+    currentLevel: number;
 }
+
+type State = {
+	champion_data: unknown;
+	challenge_data: {
+		[key: number]: Challenge
+	};
+}
+
+export let state: State = {
+	champion_data: {},
+	challenge_data: {},
+};

@@ -10,21 +10,48 @@
 		challenges?: { [key: number]: boolean }
 	}
 
+	type CommunityDragonChampion = {
+		data: {
+			[key: string]: {
+				name: string,
+				key: string
+			}
+		}
+	}
+
+	type MasteryData = {
+		championId: number,
+		championLevel: number,
+		championPoints: number,
+		chestGranted: boolean,
+	}
+
 	let champions: { [key: number]: Champion } = {};
-	let champion_dragon: unknown;
-	let mastery_data: unknown;
+	let table_data: Champion[] = [];
+	let champion_dragon: CommunityDragonChampion;
+	let mastery_data: MasteryData[];
+
+	function refresh() {
+		invoke("process_lockfile");
+		invoke("update_all_data").then(() => {
+			invoke("get_challenge_data").then(challenge_data => {
+				invoke("get_champion_data").then(champion_data => {
+					mastery_data = champion_data as MasteryData[];
+				})
+			})
+		});
+	}
 
 	$: if (lockfile_exists) {
 		invoke("get_champion_map").then(champion_data => {
-			champion_dragon = champion_data;
+			console.log("dragon", champion_data);
+			champion_dragon = champion_data as CommunityDragonChampion;
 		});
 
 		invoke("update_all_data").then(() => {
 			invoke("get_challenge_data").then(challenge_data => {
 				invoke("get_champion_data").then(champion_data => {
-					console.log(champion_data);
-					console.log(challenge_data);
-					mastery_data = champion_data;
+					mastery_data = champion_data as MasteryData[];
 				})
 			})
 		});
@@ -40,21 +67,29 @@
 		);
 	}
 
+	$: table_data = Object.values(champions).sort((a, b) => {
+		if (b.mastery_level === a.mastery_level)
+			return b.mastery_points - a.mastery_points;
+		return b.mastery_level - a.mastery_level;
+	});
+
 	$: if (mastery_data) {
 		mastery_data.forEach(x => {
 			const id = x.championId;
-			champions[id].mastery_level = x.championLevel;
-			champions[id].mastery_points = x.championPoints;
+			console.log(champions);
+			champions[id].mastery_level = x.championLevel || 0;
+			champions[id].mastery_points = x.championPoints || 0;
 		});
 	}
 </script>
 
 <main>
+	<button on:click={refresh}>refresh</button>
 	<div id="flow">
 		west
 
 		<table>
-			{#each Object.entries(champions) as [id, champion]}
+			{#each table_data as champion}
 				<tr>
 					<td>{champion.name}</td>
 					<td>{champion.mastery_level}</td>
@@ -62,13 +97,6 @@
 				</tr>
 			{/each}
 		</table>
-		<!--{#each Object.entries(champions) as [id, champion]}
-			<div>
-				{champion.name}
-				{champion.mastery_level}
-				{champion.mastery_points}
-			</div>
-		{/each}-->
 	</div>
 </main>
 
