@@ -26,12 +26,10 @@
 
     console.log("stuff");
 
-    $: lockfile_exists ? (() => {
+    $: if (lockfile_exists) {
         invoke("process_lockfile");
-        invoke("start_lcu_websocket", {endpoints: ["OnJsonApiEvent_lol-gameflow_v1_gameflow-phase"]})
-    })() : (() => {
-
-    })();
+        invoke("start_lcu_websocket", {endpoints: ["OnJsonApiEvent_lol-gameflow_v1_gameflow-phase"]});
+    }
 
     invoke("process_lockfile");
     invoke("async_watch");
@@ -104,7 +102,6 @@
     main {
         height: 100%;
         width: 100%;
-        background: red;
         display: flex;
         flex-direction: column;
     }

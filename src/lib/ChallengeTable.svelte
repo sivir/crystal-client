@@ -7,7 +7,7 @@
 	invoke("update_all_data").then(() => {
 		invoke("get_challenge_data").then(x => {
 			state.challenge_data = x as any;
-			console.log("chal", state.challenge_data);
+			console.log("chall", state.challenge_data);
 		})
 	});
 </script>

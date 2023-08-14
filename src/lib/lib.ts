@@ -1,7 +1,10 @@
-type Challenge = {
-    name: string,
-    points: number;
+export type Challenge = {
+    name: string;
+	description: string;
     currentLevel: number;
+	completedIds: number[];
+	availableIds: number[];
+	idListType: string;
 }
 
 type State = {
