@@ -16,7 +16,6 @@ use tungstenite::Message;
 
 use data::Data;
 
-mod greet;
 mod file_watcher;
 mod data;
 
@@ -251,7 +250,6 @@ fn main() {
 			get_champion_data,
 			update_all_data,
 			update_challenge_data,
-			greet::greet,
 			read_file,
 			http_retry,
 			start_lcu_websocket,

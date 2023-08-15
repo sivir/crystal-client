@@ -19,16 +19,12 @@
     let gameflow = "None";
     let page = Page.champions;
 
-    let close, minimize, maximize;
-    $: if (close) close.addEventListener("click", () => appWindow.hide());
-    $: if (minimize) minimize.addEventListener("click", () => appWindow.minimize());
-    $: if (maximize) maximize.addEventListener("click", () => appWindow.toggleMaximize());
-
     console.log("stuff");
 
     $: if (lockfile_exists) {
         invoke("process_lockfile");
         invoke("start_lcu_websocket", {endpoints: ["OnJsonApiEvent_lol-gameflow_v1_gameflow-phase"]});
+        invoke("http_retry", {endpoint: "help"}).then(c => console.log("help", c));
     }
 
     invoke("process_lockfile");
@@ -52,23 +48,25 @@
     <div data-tauri-drag-region class="titlebar">
         <div class="titlebar-button">crystal</div>
         <div>
-            <div class="titlebar-button" id="minimize" bind:this={minimize}>
+            <button class="titlebar-button" on:click={appWindow.minimize}>
                 <img src="https://api.iconify.design/mdi:window-minimize.svg" alt="minimize"/>
-            </div>
-            <div class="titlebar-button" id="maximize" bind:this={maximize}>
+            </button>
+            <button class="titlebar-button" on:click={appWindow.toggleMaximize}>
                 <img src="https://api.iconify.design/mdi:window-maximize.svg" alt="maximize"/>
-            </div>
-            <div class="titlebar-button" id="close" bind:this={close}>
+            </button>
+            <button class="titlebar-button" on:click={appWindow.hide}>
                 <img src="https://api.iconify.design/mdi:close.svg" alt="close"/>
-            </div>
+            </button>
         </div>
     </div>
 
     <div id="sideways">
         <div id="sidebar">
-            <button on:click={() => page = Page.challenges}>challenges</button>
-            <button on:click={() => page = Page.champions}>champions</button>
-            <button on:click={() => page = Page.settings}>settings</button>
+            <div id="sidebuttons">
+                <button on:click={() => page = Page.challenges}>challenges</button>
+                <button on:click={() => page = Page.champions}>champions</button>
+                <button on:click={() => page = Page.settings}>settings</button>
+            </div>
         </div>
 
         <div id="main">
@@ -107,9 +105,16 @@
     }
 
     #sidebar {
-        min-height: 100%;
-        background: #396cd8;
+        height: 100%;
+        background: #212121;
         width: 200px;
+    }
+
+    #sidebuttons {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        padding-top: 20px;
     }
 
     #sideways {
@@ -123,7 +128,7 @@
         padding-left: 5px;
         padding-right: 5px;
         height: 30px;
-        background: #329ea3;
+        background: #1f1f1f;
         user-select: none;
         display: flex;
         justify-content: space-between;

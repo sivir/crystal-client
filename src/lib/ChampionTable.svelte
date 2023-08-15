@@ -117,7 +117,7 @@
 				<td>mastery points</td>
 				{#each table_challenges as challenge}
 					<td>
-						{challenge.name}
+						<div title={challenge.description}>{challenge.name}</div>
 					</td>
 				{/each}
 			</tr>
