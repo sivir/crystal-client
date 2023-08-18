@@ -54,6 +54,13 @@
 	$: state && console.log(state);
 
 	$: table_challenges = Object.values(state.challenge_data).filter(challenge => {
+		const ignored_challenges = [401104, 401105, 501005, 501000]; // ignore m5, m7, eternals
+		if (challenge.category === "LEGACY") {
+			return false;
+		}
+		if (ignored_challenges.includes(challenge.id)) {
+			return false;
+		}
 		return (challenge.idListType === "CHAMPION" && challenge.availableIds.length === 0);
 	});
 
@@ -106,9 +113,7 @@
 
 <main>
 	<button on:click={refresh}>refresh</button>
-	<div id="flow">
-		west
-
+	<div>
 		<table>
 			<thead>
 			<tr>
@@ -141,6 +146,3 @@
 		</table>
 	</div>
 </main>
-
-<style>
-</style>

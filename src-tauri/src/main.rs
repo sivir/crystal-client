@@ -35,7 +35,7 @@ async fn process_lockfile(app: AppHandle, state: tauri::State<'_, Data>) -> Resu
 		Ok(raw_contents) => {
 			data.lockfile = true;
 			app.emit_all("lockfile", "create").unwrap();
-			println!("filel found");
+			println!("file found");
 			let contents = raw_contents.split(":").collect::<Vec<_>>();
 			data.port = contents[2].to_string();
 			let auth = format!("riot:{}", contents[3]);
