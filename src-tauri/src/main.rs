@@ -70,6 +70,15 @@ async fn update_all_data(app_handle: AppHandle) -> Result<(), ()> {
 }
 
 #[tauri::command]
+async fn update_gameflow_phase(app_handle: AppHandle, state: tauri::State<'_, Data>) -> Result<(), ()> {
+	let res = http_retry("lol-gameflow/v1/gameflow-phase", state.clone()).await.unwrap();
+	println!("{:?}", res);
+	app_handle.emit_all("gameflow", res.as_str()).unwrap();
+
+	Ok(())
+}
+
+#[tauri::command]
 async fn update_summoner_id(state: tauri::State<'_, Data>) -> Result<(), ()> {
 	let res = http_retry("lol-summoner/v1/current-summoner", state.clone()).await.unwrap();
 	let mut data = state.0.lock().await;
@@ -256,7 +265,8 @@ fn main() {
 			process_lockfile,
 			file_watcher::async_watch,
 			http_generic,
-			get_champion_map
+			get_champion_map,
+			update_gameflow_phase
 		])
 		.on_system_tray_event(handle_tray_event)
 		.on_window_event(|event| match event.event() {

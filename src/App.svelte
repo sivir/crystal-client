@@ -7,6 +7,7 @@
     import ChampionTable from "./lib/ChampionTable.svelte";
     import Settings from "./lib/Settings.svelte";
     import Live from "./lib/Live.svelte";
+    import {state} from "./lib/lib";
 
     enum Page {
         champions, // champion table with mastery
@@ -40,10 +41,12 @@
         }
     });
     listen("gameflow", x => {
-        console.log(x);
+        console.log("phase", x);
         gameflow = x.payload.toString();
+        state.phase = gameflow;
     });
     invoke("process_lockfile");
+    invoke("update_gameflow_phase");
     invoke("async_watch");
 </script>
 
@@ -69,6 +72,7 @@
                 <button on:click={() => page = Page.challenges}>challenges</button>
                 <button on:click={() => page = Page.champions}>champions</button>
                 <button on:click={() => page = Page.settings}>settings</button>
+                <button on:click={() => page = Page.live}>live {#if state.phase === "Lobby" || state.phase === "ChampSelect"}🟢{/if}</button>
             </div>
         </div>
 

@@ -20,5 +20,5 @@ type State = {
 export let state: State = {
 	champion_data: {},
 	challenge_data: {},
-	phase: ""
+	phase: "None"
 };
