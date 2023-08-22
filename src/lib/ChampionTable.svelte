@@ -1,6 +1,6 @@
 <script lang="ts">
 	import {invoke} from "@tauri-apps/api/tauri";
-	import { state} from "./lib";
+	import {state} from "./lib";
 	import type {Challenge} from "./lib";
 
 	export let lockfile_exists: boolean;
@@ -10,7 +10,7 @@
 		name: string,
 		mastery_level: number,
 		mastery_points: number,
-		challenges?: { [key: number]: boolean }
+		chest_granted: boolean
 	}
 
 	type CommunityDragonChampion = {
@@ -44,17 +44,17 @@
 		invoke("update_all_data").then(() => {
 			invoke("get_challenge_data").then(challenge_data => {
 				invoke("get_champion_data").then(champion_data => {
-					state.challenge_data = challenge_data as any;
+					$state.challenge_data = challenge_data as any;
 					mastery_data = champion_data as MasteryData[];
 				})
 			})
 		});
 	}
 
-	$: state && console.log(state);
+	$: state && console.log("state", state);
 
-	$: table_challenges = Object.values(state.challenge_data).filter(challenge => {
-		const ignored_challenges = [401104, 401105, 501005, 501000]; // ignore m5, m7, eternals
+	$: table_challenges = Object.values($state.challenge_data).filter(challenge => {
+		const ignored_challenges = [401104, 401105, 501005, 501000, 501003]; // ignore m5, m7, eternals
 		if (challenge.category === "LEGACY") {
 			return false;
 		}
@@ -64,7 +64,7 @@
 		return (challenge.idListType === "CHAMPION" && challenge.availableIds.length === 0);
 	});
 
-	$: table_challenges && console.log(table_challenges);
+	$: table_challenges && console.log("table_challenges", table_challenges);
 
 	$: if (lockfile_exists) {
 		invoke("get_champion_map").then(champion_data => {
@@ -75,7 +75,7 @@
 		invoke("update_all_data").then(() => {
 			invoke("get_challenge_data").then(challenge_data => {
 				invoke("get_champion_data").then(champion_data => {
-					state.challenge_data = challenge_data as any;
+					$state.challenge_data = challenge_data as any;
 					mastery_data = champion_data as MasteryData[];
 				})
 			})
@@ -83,13 +83,13 @@
 	}
 
 	$: if (champion_dragon) {
-		console.log("champions");
 		champions = Object.fromEntries(
 			Object.entries(champion_dragon.data).map(([, value]) => [value.key, {
 				id: parseInt(value.key),
 				name: value.name,
 				mastery_points: 0,
-				mastery_level: 0
+				mastery_level: 0,
+				chest_granted: false
 			}])
 		);
 	}
@@ -101,12 +101,13 @@
 	});
 
 	$: if (Object.values(champions).length > 0 && mastery_data) {
-		console.log(champions);
+		console.log("champions", champions);
 		mastery_data.forEach(x => {
 			const id = x.championId;
 			champions[id].id = id;
 			champions[id].mastery_level = x.championLevel || 0;
 			champions[id].mastery_points = x.championPoints || 0;
+			champions[id].chest_granted = x.chestGranted || false;
 		});
 	}
 </script>
@@ -120,6 +121,7 @@
 				<td>name</td>
 				<td>mastery</td>
 				<td>mastery points</td>
+				<td>chest</td>
 				{#each table_challenges as challenge}
 					<td>
 						<div title={challenge.description}>{challenge.name}</div>
@@ -132,6 +134,9 @@
 					<td>{champion.name}</td>
 					<td>{champion.mastery_level}</td>
 					<td>{champion.mastery_points}</td>
+					<td>{#if champion.chest_granted}✅
+					{:else}
+						❌{/if}</td>
 					{#each table_challenges as challenge}
 						<td>
 							{#if challenge.completedIds.includes(champion.id)}

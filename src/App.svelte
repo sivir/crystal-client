@@ -13,6 +13,7 @@
         champions, // champion table with mastery
         challenges, // just a list of challenges
         globe, // globetrotters + harmony list
+        search, // search for another summoner, compare challenge progress
         live, // live lobby then champ select data
         settings, // settings
     }
@@ -25,7 +26,7 @@
 
     $: if (lockfile_exists) {
         invoke("process_lockfile");
-        invoke("start_lcu_websocket", {endpoints: ["OnJsonApiEvent_lol-gameflow_v1_gameflow-phase"]});
+        invoke("start_lcu_websocket", {endpoints: ["OnJsonApiEvent_lol-gameflow_v1_gameflow-phase", "OnJsonApiEvent_lol-champ-select_v1_session", "OnJsonApiEvent_lol-lobby_v2_lobby"]});
         invoke("http_retry", {endpoint: "help"}).then(c => console.log("help", c));
     }
 
@@ -43,7 +44,17 @@
     listen("gameflow", x => {
         console.log("phase", x);
         gameflow = x.payload.toString();
-        state.phase = gameflow;
+        state.update(state => {
+            state.phase = gameflow;
+            return state;
+        });
+    });
+    listen("lobby", x => {
+        console.log("lobby", x);
+        state.update(state => {
+            state.lobby = x.payload.map(x => x.summonerName);
+            return state;
+        });
     });
     invoke("process_lockfile");
     invoke("update_gameflow_phase");
@@ -72,7 +83,7 @@
                 <button on:click={() => page = Page.challenges}>challenges</button>
                 <button on:click={() => page = Page.champions}>champions</button>
                 <button on:click={() => page = Page.settings}>settings</button>
-                <button on:click={() => page = Page.live}>live {#if state.phase === "Lobby" || state.phase === "ChampSelect"}🟢{/if}</button>
+                <button on:click={() => page = Page.live}>live {#if $state.phase === "Lobby" || $state.phase === "ChampSelect"}🟢{/if}</button>
             </div>
         </div>
 

@@ -193,7 +193,24 @@ async fn start_lcu_websocket(endpoints: Vec<&str>, app_handle: AppHandle, state:
 								let msg = msg.unwrap();
 								if msg.is_text() && !msg.to_string().is_empty() {
 									let json: Value = serde_json::from_str(msg.to_string().as_str()).unwrap();
-									app_handle.emit_all("gameflow", json[2]["data"].as_str()).unwrap();
+									println!("ws_json: {:?}", json);
+									let event = json[1].as_str().unwrap();
+									match event {
+										"OnJsonApiEvent_lol-gameflow_v1_gameflow-phase" => {
+											app_handle.emit_all("gameflow", json[2]["data"].as_str()).unwrap();
+										}
+										"OnJsonApiEvent_lol-lobby_v2_lobby" => {
+											if json[2]["uri"].as_str().unwrap() == "/lol-lobby/v2/lobby/members" {
+												app_handle.emit_all("lobby", json[2]["data"].as_array()).unwrap();
+											}
+										}
+										"OnJsonApiEvent_lol-champ-select_v1_session" => {
+
+										}
+										_ => {
+											println!("{event}");
+										}
+									}
 								}
 							}
 							Err(_) => break 'outer
