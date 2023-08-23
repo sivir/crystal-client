@@ -24,7 +24,12 @@ fn async_watcher() -> notify::Result<(RecommendedWatcher, Receiver<notify::Resul
 
 #[tauri::command]
 pub async fn async_watch(state: tauri::State<'_, Data>, app_handle: AppHandle) -> Result<(), ()> {
-	let data = state.0.lock().await;
+	let mut data = state.0.lock().await;
+	if data.lockfile_listener {
+		return Ok(());
+	} else {
+		data.lockfile_listener = true;
+	}
 	let path = data.install_dir.clone();
 	drop(data);
 

@@ -160,7 +160,12 @@ async fn http_retry(endpoint: &str, state: tauri::State<'_, Data>) -> Result<Val
 
 #[tauri::command]
 async fn start_lcu_websocket(endpoints: Vec<&str>, app_handle: AppHandle, state: tauri::State<'_, Data>) -> Result<(), String> {
-	let data = state.0.lock().await;
+	let mut data = state.0.lock().await;
+	if data.ws_listener {
+		return Ok(());
+	} else {
+		data.ws_listener = true;
+	}
 	let port = data.port.clone();
 	let auth_string = data.auth.clone();
 	drop(data);
