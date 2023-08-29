@@ -1,7 +1,7 @@
 import {writable} from "svelte/store";
 import type {Writable} from "svelte/store";
 
-export type Challenge = {
+type Challenge = {
     name: string;
 	id: number;
 	category: string;
@@ -12,6 +12,15 @@ export type Challenge = {
 	idListType: string;
 }
 
+type CommunityDragonChampion = {
+	data: {
+		[key: number]: {
+			name: string,
+			key: string
+		}
+	}
+}
+
 type State = {
 	champion_data: unknown;
 	challenge_data: {
@@ -19,13 +28,18 @@ type State = {
 	};
 	phase: string;
 	lobby: string[];
-	champ_select: string[];
+	champ_select: number[];
+	champion_dragon: CommunityDragonChampion;
 }
 
-export let state: Writable<State> = writable({
+let state: Writable<State> = writable({
 	champion_data: {},
 	challenge_data: {},
 	phase: "None",
 	lobby: [],
-	champ_select: []
+	champ_select: [],
+	champion_dragon: { data: {} }
 });
+
+export { state };
+export type { Challenge, CommunityDragonChampion };

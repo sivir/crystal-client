@@ -70,6 +70,15 @@ async fn update_all_data(app_handle: AppHandle) -> Result<(), ()> {
 }
 
 #[tauri::command]
+async fn update_champ_select(app_handle: AppHandle, state: tauri::State<'_, Data>) -> Result<(), ()> {
+	let res = http_retry("lol-champ-select/v1/session", state.clone()).await.unwrap();
+	println!("{:?}", res);
+	app_handle.emit_all("champ_select", res.as_str()).unwrap();
+
+	Ok(())
+}
+
+#[tauri::command]
 async fn update_gameflow_phase(app_handle: AppHandle, state: tauri::State<'_, Data>) -> Result<(), ()> {
 	let res = http_retry("lol-gameflow/v1/gameflow-phase", state.clone()).await.unwrap();
 	println!("{:?}", res);
@@ -173,15 +182,11 @@ async fn start_lcu_websocket(endpoints: Vec<&str>, app_handle: AppHandle, state:
 	let auth = format!("Basic {auth_string}");
 	let url = format!("wss://127.0.0.1:{port}/");
 	loop {
-		let tls_connector = native_tls::TlsConnector::builder()
-			.danger_accept_invalid_certs(true).build().unwrap();
+		let tls_connector = native_tls::TlsConnector::builder().danger_accept_invalid_certs(true).build().unwrap();
 		let connector = tokio_tungstenite::Connector::NativeTls(tls_connector);
 		let mut request = url.clone().into_client_request().unwrap();
 		request.headers_mut().insert(AUTHORIZATION, auth.parse().unwrap());
-		match tokio_tungstenite::connect_async_tls_with_config(request,
-		                                                       Some(WebSocketConfig::default()),
-		                                                       false,
-		                                                       Some(connector)).await {
+		match tokio_tungstenite::connect_async_tls_with_config(request, Some(WebSocketConfig::default()), false, Some(connector)).await {
 			Ok(connection_response) => {
 				let (mut socket, _) = connection_response;
 				println!("Connected");
@@ -210,7 +215,9 @@ async fn start_lcu_websocket(endpoints: Vec<&str>, app_handle: AppHandle, state:
 											}
 										}
 										"OnJsonApiEvent_lol-champ-select_v1_session" => {
-
+											if json[2]["eventType"].as_str().unwrap() != "Delete" {
+												app_handle.emit_all("champ_select", json[2]["data"].clone()).unwrap();
+											}
 										}
 										_ => {
 											println!("{event}");
@@ -288,7 +295,8 @@ fn main() {
 			file_watcher::async_watch,
 			http_generic,
 			get_champion_map,
-			update_gameflow_phase
+			update_gameflow_phase,
+			update_champ_select
 		])
 		.on_system_tray_event(handle_tray_event)
 		.on_window_event(|event| match event.event() {

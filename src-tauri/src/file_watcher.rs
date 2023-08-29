@@ -53,6 +53,7 @@ pub async fn async_watch(state: tauri::State<'_, Data>, app_handle: AppHandle) -
 							println!("remove!");
 							let mut data = state.0.lock().await;
 							data.lockfile = false;
+							data.ws_listener = false;
 							drop(data);
 							app_handle.emit_all("lockfile", "remove").unwrap();
 						}

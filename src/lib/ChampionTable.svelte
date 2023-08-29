@@ -1,7 +1,7 @@
 <script lang="ts">
 	import {invoke} from "@tauri-apps/api/tauri";
 	import {state} from "./lib";
-	import type {Challenge} from "./lib";
+	import type {Challenge, CommunityDragonChampion} from "./lib";
 
 	export let lockfile_exists: boolean;
 
@@ -12,16 +12,6 @@
 		mastery_points: number,
 		chest_granted: boolean
 	}
-
-	type CommunityDragonChampion = {
-		data: {
-			[key: number]: {
-				name: string,
-				key: string
-			}
-		}
-	}
-
 	type MasteryData = {
 		championId: number,
 		championLevel: number,
@@ -31,7 +21,6 @@
 
 	let champions: { [key: number]: Champion } = {};
 	let table_data: Champion[] = [];
-	let champion_dragon: CommunityDragonChampion;
 	let mastery_data: MasteryData[];
 	let table_challenges: Challenge[] = [];
 
@@ -39,7 +28,7 @@
 		invoke("process_lockfile");
 		invoke("get_champion_map").then(champion_data => {
 			console.log("dragon", champion_data);
-			champion_dragon = champion_data as CommunityDragonChampion;
+			$state.champion_dragon = champion_data as CommunityDragonChampion;
 		});
 		invoke("update_all_data").then(() => {
 			invoke("get_challenge_data").then(challenge_data => {
@@ -69,7 +58,7 @@
 	$: if (lockfile_exists) {
 		invoke("get_champion_map").then(champion_data => {
 			console.log("dragon", champion_data);
-			champion_dragon = champion_data as CommunityDragonChampion;
+			$state.champion_dragon = champion_data as CommunityDragonChampion;
 		});
 
 		invoke("update_all_data").then(() => {
@@ -82,9 +71,9 @@
 		});
 	}
 
-	$: if (champion_dragon) {
+	$: if ($state.champion_dragon) {
 		champions = Object.fromEntries(
-			Object.entries(champion_dragon.data).map(([, value]) => [value.key, {
+			Object.entries($state.champion_dragon.data).map(([, value]) => [value.key, {
 				id: parseInt(value.key),
 				name: value.name,
 				mastery_points: 0,
@@ -134,9 +123,7 @@
 					<td>{champion.name}</td>
 					<td>{champion.mastery_level}</td>
 					<td>{champion.mastery_points}</td>
-					<td>{#if champion.chest_granted}✅
-					{:else}
-						❌{/if}</td>
+					<td>{#if champion.chest_granted}✅{:else}❌{/if}</td>
 					{#each table_challenges as challenge}
 						<td>
 							{#if challenge.completedIds.includes(champion.id)}

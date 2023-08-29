@@ -30,6 +30,15 @@
         invoke("http_retry", {endpoint: "help"}).then(c => console.log("help", c));
     }
 
+    type ASdf = {
+        championId: number;
+    }
+
+    type ChampSelect = {
+        myTeam: ASdf[];
+        benchChampions: number[];
+    }
+
     listen("lockfile", x => {
         const payload = x.payload;
         console.log(payload, lockfile_exists);
@@ -38,7 +47,7 @@
             console.log("lockfile exists");
         } else if (payload === "remove" && lockfile_exists === true) {
             lockfile_exists = false;
-            console.log("lockfile doesnt exist");
+            console.log("lockfile doesn't exist");
         }
     });
     listen("gameflow", x => {
@@ -46,15 +55,21 @@
         gameflow = x.payload.toString();
         state.update(state => {
             state.phase = gameflow;
+            if (gameflow === "ChampSelect") {
+                invoke("update_champ_select");
+            }
             return state;
         });
     });
     listen("lobby", x => {
         console.log("lobby", x);
-        state.update(state => {
-            state.lobby = x.payload.map(x => x.summonerName);
-            return state;
-        });
+        $state.lobby = x.payload.map(x => x.summonerName);
+    });
+    listen("champ_select", x => {
+        let champ_select = x.payload as ChampSelect;
+        console.log("champ_select", x);
+        console.log("myTeam", champ_select.myTeam);
+        $state.champ_select = champ_select.myTeam.map(x => x.championId).concat(champ_select.benchChampions);
     });
     invoke("process_lockfile");
     invoke("update_gameflow_phase");
@@ -88,7 +103,7 @@
         </div>
 
         <div id="main">
-            <p>lockfile {lockfile_exists ? "exists" : "doesn't exist"}. {gameflow}</p>
+            <p>lockfile {lockfile_exists ? "exists" : "doesn't exist"}. {gameflow}</p> {page}
             <div class="test" hidden={page !== Page.champions}>
                 <ChampionTable {lockfile_exists}/>
             </div>

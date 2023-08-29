@@ -5,6 +5,7 @@
 </script>
 
 <main>
+	test
 	{JSON.stringify($state.phase)}
 	{JSON.stringify($state.lobby)}
 	{JSON.stringify($state.champ_select)}
