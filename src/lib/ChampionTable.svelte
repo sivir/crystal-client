@@ -40,7 +40,7 @@
 		});
 	}
 
-	$: state && console.log("state", state);
+	$: state && console.log("state", $state);
 
 	$: table_challenges = Object.values($state.challenge_data).filter(challenge => {
 		const ignored_challenges = [401104, 401105, 501005, 501000, 501003]; // ignore m5, m7, eternals
@@ -72,15 +72,13 @@
 	}
 
 	$: if ($state.champion_dragon) {
-		champions = Object.fromEntries(
-			Object.entries($state.champion_dragon.data).map(([, value]) => [value.key, {
-				id: parseInt(value.key),
-				name: value.name,
-				mastery_points: 0,
-				mastery_level: 0,
-				chest_granted: false
-			}])
-		);
+		champions = Object.fromEntries(Object.entries($state.champion_dragon.data).map(([, value]) => [value.key, {
+			id: parseInt(value.key),
+			name: value.name,
+			mastery_points: 0,
+			mastery_level: 0,
+			chest_granted: false
+		}]));
 	}
 
 	$: table_data = Object.values(champions).sort((a, b) => {

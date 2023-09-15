@@ -21,6 +21,11 @@ type CommunityDragonChampion = {
 	}
 }
 
+type ChampionShard = {
+	count: number;
+	storeItemId: number;
+}
+
 type State = {
 	champion_data: unknown;
 	challenge_data: {
@@ -30,6 +35,7 @@ type State = {
 	lobby: string[];
 	champ_select: number[];
 	champion_dragon: CommunityDragonChampion;
+	champ_shards: ChampionShard[];
 }
 
 let state: Writable<State> = writable({
@@ -38,7 +44,8 @@ let state: Writable<State> = writable({
 	phase: "None",
 	lobby: [],
 	champ_select: [],
-	champion_dragon: { data: {} }
+	champion_dragon: { data: {} },
+	champ_shards: []
 });
 
 export { state };

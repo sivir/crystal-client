@@ -26,7 +26,7 @@
 
     $: if (lockfile_exists) {
         invoke("process_lockfile");
-        invoke("start_lcu_websocket", {endpoints: ["OnJsonApiEvent_lol-gameflow_v1_gameflow-phase", "OnJsonApiEvent_lol-champ-select_v1_session", "OnJsonApiEvent_lol-lobby_v2_lobby"]});
+        invoke("start_lcu_websocket", {endpoints: ["OnJsonApiEvent_lol-gameflow_v1_gameflow-phase", "OnJsonApiEvent_lol-champ-select_v1_session", "OnJsonApiEvent_lol-lobby_v2_lobby", "OnJsonApiEvent_lol-loot_v1_player_loot"]});
         invoke("http_retry", {endpoint: "help"}).then(c => console.log("help", c));
     }
 
@@ -37,6 +37,10 @@
     type ChampSelect = {
         myTeam: ASdf[];
         benchChampions: number[];
+    }
+
+    type Lobby = {
+        summonerName: string;
     }
 
     listen("lockfile", x => {
@@ -53,23 +57,21 @@
     listen("gameflow", x => {
         console.log("phase", x);
         gameflow = x.payload.toString();
-        state.update(state => {
-            state.phase = gameflow;
-            if (gameflow === "ChampSelect") {
-                invoke("update_champ_select");
-            }
-            return state;
-        });
+		$state.phase = gameflow;
+	    if (gameflow === "ChampSelect") {
+		    invoke("update_champ_select");
+	    }
     });
     listen("lobby", x => {
         console.log("lobby", x);
-        $state.lobby = x.payload.map(x => x.summonerName);
+        const lobby = x.payload as Lobby[];
+        $state.lobby = lobby.map(x => x.summonerName);
     });
     listen("champ_select", x => {
         let champ_select = x.payload as ChampSelect;
         console.log("champ_select", x);
         console.log("myTeam", champ_select.myTeam);
-        $state.champ_select = champ_select.myTeam.map(x => x.championId).concat(champ_select.benchChampions);
+        $state.champ_select = champ_select.myTeam.map(x => x.championId).concat(champ_select.benchChampions.map(x => x.championId));
     });
     invoke("process_lockfile");
     invoke("update_gameflow_phase");
