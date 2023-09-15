@@ -26,7 +26,7 @@
 
     $: if (lockfile_exists) {
         invoke("process_lockfile");
-        invoke("start_lcu_websocket", {endpoints: ["OnJsonApiEvent_lol-gameflow_v1_gameflow-phase", "OnJsonApiEvent_lol-champ-select_v1_session", "OnJsonApiEvent_lol-lobby_v2_lobby", "OnJsonApiEvent_lol-loot_v1_player_loot"]});
+        invoke("start_lcu_websocket", {endpoints: ["OnJsonApiEvent_lol-gameflow_v1_gameflow-phase", "OnJsonApiEvent_lol-champ-select_v1_session", "OnJsonApiEvent_lol-lobby_v2_lobby"]});
         invoke("http_retry", {endpoint: "help"}).then(c => console.log("help", c));
     }
 
