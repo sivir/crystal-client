@@ -12,8 +12,8 @@
 
 <main>
 	whee
-	<div>
-		<table >
+	<div id="tab">
+		<table>
 			{#each Object.entries($state.challenge_data) as [_, challenge]}
 				<tr>
 					<td>{challenge.name}</td>

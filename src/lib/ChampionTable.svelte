@@ -101,7 +101,7 @@
 
 <main>
 	<button on:click={refresh}>refresh</button>
-	<div>
+	<div id="tab">
 		<table>
 			<thead>
 			<tr>
@@ -136,3 +136,17 @@
 		</table>
 	</div>
 </main>
+
+<style>
+	#tab {
+		height: 100%;
+        overflow: auto;
+	}
+
+	main {
+		height: 100%;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+	}
+</style>

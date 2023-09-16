@@ -124,15 +124,15 @@
 
 <style>
     .test {
-        height: 100%;
         overflow: auto;
+        margin: 20px;
     }
 
     #main {
         height: 100%;
-        flex: 1;
         display: flex;
         flex-direction: column;
+        width: 100%;
     }
 
     main {
