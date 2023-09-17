@@ -24,6 +24,8 @@
 	let mastery_data: MasteryData[];
 	let table_challenges: Challenge[] = [];
 
+	let search = "";
+
 	function refresh() {
 		invoke("process_lockfile");
 		invoke("get_champion_map").then(champion_data => {
@@ -100,7 +102,12 @@
 </script>
 
 <main>
-	<button on:click={refresh}>refresh</button>
+	<div>
+		<button on:click={refresh}>refresh</button>
+		search: 
+		<input bind:value={search} />
+		{search}
+	</div>
 	<div id="tab">
 		<table>
 			<thead>
@@ -117,21 +124,23 @@
 			</tr>
 			</thead>
 			{#each table_data as champion}
-				<tr>
-					<td>{champion.name}</td>
-					<td>{champion.mastery_level}</td>
-					<td>{champion.mastery_points}</td>
-					<td>{#if champion.chest_granted}✅{:else}❌{/if}</td>
-					{#each table_challenges as challenge}
-						<td>
-							{#if challenge.completedIds.includes(champion.id)}
-								✅
-							{:else}
-								❌
-							{/if}
-						</td>
-					{/each}
-				</tr>
+				{#if search === "" || champion.name.toLowerCase().includes(search.toLowerCase())}
+					<tr>
+						<td>{champion.name}</td>
+						<td>{champion.mastery_level}</td>
+						<td>{champion.mastery_points}</td>
+						<td>{#if champion.chest_granted}✅{:else}❌{/if}</td>
+						{#each table_challenges as challenge}
+							<td>
+								{#if challenge.completedIds.includes(champion.id)}
+									✅
+								{:else}
+									❌
+								{/if}
+							</td>
+						{/each}
+					</tr>
+				{/if}
 			{/each}
 		</table>
 	</div>
