@@ -3,8 +3,7 @@
 </script>
 
 <main>
-	tes
-	{JSON.stringify($state.phase)}
-	{JSON.stringify($state.lobby)}
-	{JSON.stringify($state.champ_select)}
+	<p>state: {JSON.stringify($state.phase)}</p>
+	<p>current lobby: {JSON.stringify($state.lobby)}</p>
+	<p>current champ select: {JSON.stringify($state.champ_select)}</p>
 </main>

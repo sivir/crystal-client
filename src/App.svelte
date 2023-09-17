@@ -9,9 +9,10 @@
     import Live from "./lib/Live.svelte";
     import {state} from "./lib/lib";
 
+    // different side panel pages
     enum Page {
         champions, // champion table with mastery
-        challenges, // just a list of challenges
+        profile, // just a list of challenges
         globe, // globetrotters + harmony list
         search, // search for another summoner, compare challenge progress
         live, // live lobby then champ select data
@@ -27,7 +28,7 @@
     $: if (lockfile_exists) {
         invoke("process_lockfile");
         invoke("start_lcu_websocket", {endpoints: ["OnJsonApiEvent_lol-gameflow_v1_gameflow-phase", "OnJsonApiEvent_lol-champ-select_v1_session", "OnJsonApiEvent_lol-lobby_v2_lobby"]});
-        invoke("http_retry", {endpoint: "help"}).then(c => console.log("help", c));
+        invoke("http_retry", {endpoint: "lol-challenges/v1/summary-player-data/ARAM/local-player"}).then(c => console.log("PROF", c));
     }
 
     type ASdf = {
@@ -36,7 +37,7 @@
 
     type ChampSelect = {
         myTeam: ASdf[];
-        benchChampions: number[];
+        benchChampions: ASdf[];
     }
 
     type Lobby = {
@@ -79,25 +80,27 @@
 </script>
 
 <main>
+    <!-- draggable titlebar -->
     <div data-tauri-drag-region class="titlebar">
         <div class="titlebar-button">crystal</div>
         <div>
             <button class="titlebar-button" on:click={appWindow.minimize}>
-                <img src="https://api.iconify.design/mdi:window-minimize.svg" alt="minimize"/>
+                <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path fill="#FFFFFF" d="M240-120v-80h480v80H240Z"/></svg>
             </button>
             <button class="titlebar-button" on:click={appWindow.toggleMaximize}>
-                <img src="https://api.iconify.design/mdi:window-maximize.svg" alt="maximize"/>
+                <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path fill="#FFFFFF" d="M160-760v-80h640v80H160Z"/></svg>
             </button>
             <button class="titlebar-button" on:click={appWindow.hide}>
-                <img src="https://api.iconify.design/mdi:close.svg" alt="close"/>
+                <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path fill="#FFFFFF" d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg>
             </button>
         </div>
     </div>
 
+    <!-- main content -->
     <div id="sideways">
         <div id="sidebar">
             <div id="sidebuttons">
-                <button on:click={() => page = Page.challenges}>challenges</button>
+                <button on:click={() => page = Page.profile}>profile</button>
                 <button on:click={() => page = Page.champions}>champions</button>
                 <button on:click={() => page = Page.settings}>settings</button>
                 <button on:click={() => page = Page.live}>live {#if $state.phase === "Lobby" || $state.phase === "ChampSelect"}🟢{/if}</button>
@@ -105,11 +108,11 @@
         </div>
 
         <div id="main">
-            <p>lockfile {lockfile_exists ? "exists" : "doesn't exist"}. {gameflow}</p> {page}
+            <p>lockfile {lockfile_exists ? "exists" : "doesn't exist"}. {gameflow}</p>
             <div class="test" hidden={page !== Page.champions}>
                 <ChampionTable {lockfile_exists}/>
             </div>
-            <div class="test" hidden={page !== Page.challenges}>
+            <div class="test" hidden={page !== Page.profile}>
                 <ChallengeTable/>
             </div>
             <div class="test" hidden={page !== Page.settings}>
@@ -177,6 +180,7 @@
         justify-content: center;
         align-items: center;
         height: 30px;
+        padding: 0;
     }
 
     .titlebar-button:hover {

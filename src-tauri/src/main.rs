@@ -144,6 +144,7 @@ async fn http_retry(endpoint: &str, state: tauri::State<'_, Data>) -> Result<Val
 	let auth = data.auth.clone();
 	drop(data);
 	let url = format!("https://127.0.0.1:{port}/{endpoint}");
+	println!("executing request on endpoint {endpoint}");
 
 	let client = reqwest::Client::builder()
 		.danger_accept_invalid_certs(true)
@@ -162,7 +163,10 @@ async fn http_retry(endpoint: &str, state: tauri::State<'_, Data>) -> Result<Val
 					return Ok(json)
 				}
 			},
-			Err(_) => std::thread::sleep(time::Duration::from_millis(1000))
+			Err(response) => {
+				println!("http_retry error {}", response.to_string());
+				std::thread::sleep(time::Duration::from_millis(1000))
+			}
 		};
 	}
 }
@@ -171,9 +175,11 @@ async fn http_retry(endpoint: &str, state: tauri::State<'_, Data>) -> Result<Val
 async fn start_lcu_websocket(endpoints: Vec<&str>, app_handle: AppHandle, state: tauri::State<'_, Data>) -> Result<(), String> {
 	let mut data = state.0.lock().await;
 	if data.ws_listener {
+		println!("already created");
 		return Ok(());
 	} else {
 		data.ws_listener = true;
+		println!("ws created");
 	}
 	let port = data.port.clone();
 	let auth_string = data.auth.clone();
@@ -203,7 +209,7 @@ async fn start_lcu_websocket(endpoints: Vec<&str>, app_handle: AppHandle, state:
 								let msg = msg.unwrap();
 								if msg.is_text() && !msg.to_string().is_empty() {
 									let json: Value = serde_json::from_str(msg.to_string().as_str()).unwrap();
-									println!("ws_json: {:?}", json);
+									//println!("ws_json: {:?}", json);
 									let event = json[1].as_str().unwrap();
 									match event {
 										"OnJsonApiEvent_lol-gameflow_v1_gameflow-phase" => {
@@ -217,6 +223,8 @@ async fn start_lcu_websocket(endpoints: Vec<&str>, app_handle: AppHandle, state:
 										"OnJsonApiEvent_lol-champ-select_v1_session" => {
 											if json[2]["eventType"].as_str().unwrap() != "Delete" {
 												app_handle.emit_all("champ_select", json[2]["data"].clone()).unwrap();
+											} else {
+												app_handle.emit_all("champ_select", serde_json::from_str::<Value>("{\"myTeam\": [], \"benchChampions\": []}").unwrap()).unwrap();
 											}
 										}
 										_ => {

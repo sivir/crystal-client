@@ -12,7 +12,7 @@
 
 <main>
 	whee
-	<div id="tab">
+	<div>
 		<table>
 			{#each Object.entries($state.challenge_data) as [_, challenge]}
 				<tr>
