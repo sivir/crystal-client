@@ -228,7 +228,7 @@ async fn start_lcu_websocket(endpoints: Vec<&str>, app_handle: AppHandle, state:
 											}
 										}
 										_ => {
-											println!("{json}");
+											println!("event not found: {json}");
 										}
 									}
 								}
