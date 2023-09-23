@@ -72,7 +72,7 @@ async fn update_all_data(app_handle: AppHandle) -> Result<(), ()> {
 #[tauri::command]
 async fn update_champ_select(app_handle: AppHandle, state: tauri::State<'_, Data>) -> Result<(), ()> {
 	let res = http_retry("lol-champ-select/v1/session", state.clone()).await.unwrap();
-	println!("{:?}", res);
+	//println!("{:?}", res);
 	app_handle.emit_all("champ_select", res.as_str()).unwrap();
 
 	Ok(())

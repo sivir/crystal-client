@@ -10,11 +10,12 @@ type Challenge = {
 	completedIds: number[];
 	availableIds: number[];
 	idListType: string;
+	gameModes: string[];
 }
 
 type CommunityDragonChampion = {
 	data: {
-		[key: number]: {
+		[key: string]: {
 			name: string,
 			key: string
 		}
@@ -36,6 +37,7 @@ type State = {
 	champ_select: number[];
 	champion_dragon: CommunityDragonChampion;
 	champ_shards: ChampionShard[];
+	table_challenges: Challenge[];
 }
 
 let state: Writable<State> = writable({
@@ -45,7 +47,8 @@ let state: Writable<State> = writable({
 	lobby: [],
 	champ_select: [],
 	champion_dragon: { data: {} },
-	champ_shards: []
+	champ_shards: [],
+	table_challenges: []
 });
 
 export { state };

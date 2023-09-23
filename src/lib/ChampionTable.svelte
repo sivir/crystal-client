@@ -22,7 +22,6 @@
 	let champions: { [key: number]: Champion } = {};
 	let table_data: Champion[] = [];
 	let mastery_data: MasteryData[];
-	let table_challenges: Challenge[] = [];
 
 	let search = "";
 
@@ -44,18 +43,18 @@
 
 	$: state && console.log("state", $state);
 
-	$: table_challenges = Object.values($state.challenge_data).filter(challenge => {
-		const ignored_challenges = [401104, 401105, 501005, 501000, 501003]; // ignore m5, m7, eternals
+	$: $state.table_challenges = Object.values($state.challenge_data).filter(challenge => {
 		if (challenge.category === "LEGACY") {
 			return false;
 		}
+		const ignored_challenges = [401104, 401105, 501005, 501000, 501003]; // ignore m5, m7, eternals
 		if (ignored_challenges.includes(challenge.id)) {
 			return false;
 		}
 		return (challenge.idListType === "CHAMPION" && challenge.availableIds.length === 0);
 	});
 
-	$: table_challenges && console.log("table_challenges", table_challenges);
+	$: $state.table_challenges && console.log("table_challenges", $state.table_challenges);
 
 	$: if (lockfile_exists) {
 		invoke("get_champion_map").then(champion_data => {
@@ -116,7 +115,7 @@
 				<td>mastery</td>
 				<td>mastery points</td>
 				<td>chest</td>
-				{#each table_challenges as challenge}
+				{#each $state.table_challenges as challenge}
 					<td>
 						<div title={challenge.description}>{challenge.name}</div>
 					</td>
@@ -130,7 +129,7 @@
 						<td>{champion.mastery_level}</td>
 						<td>{champion.mastery_points}</td>
 						<td>{#if champion.chest_granted}✅{:else}❌{/if}</td>
-						{#each table_challenges as challenge}
+						{#each $state.table_challenges as challenge}
 							<td>
 								{#if challenge.completedIds.includes(champion.id)}
 									✅
