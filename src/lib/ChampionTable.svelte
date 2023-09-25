@@ -1,7 +1,7 @@
 <script lang="ts">
 	import {invoke} from "@tauri-apps/api/tauri";
 	import {state} from "./lib";
-	import type {Challenge, CommunityDragonChampion} from "./lib";
+	import type {CommunityDragonChampion} from "./lib";
 
 	export let lockfile_exists: boolean;
 
@@ -55,6 +55,10 @@
 	});
 
 	$: $state.table_challenges && console.log("table_challenges", $state.table_challenges);
+
+	$: $state.champion_names && console.log("champion_names", $state.champion_names);
+
+	$: $state.champion_names = Object.fromEntries(Object.entries($state.champion_dragon.data).map(([, value]) => [value.key, value.name]));
 
 	$: if (lockfile_exists) {
 		invoke("get_champion_map").then(champion_data => {

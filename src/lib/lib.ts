@@ -36,6 +36,9 @@ type State = {
 	lobby: string[];
 	champ_select: number[];
 	champion_dragon: CommunityDragonChampion;
+	champion_names: {
+		[key: number]: string
+	}
 	champ_shards: ChampionShard[];
 	table_challenges: Challenge[];
 }
@@ -46,6 +49,7 @@ let state: Writable<State> = writable({
 	phase: "None",
 	lobby: [],
 	champ_select: [],
+	champion_names: {},
 	champion_dragon: { data: {} },
 	champ_shards: [],
 	table_challenges: []
