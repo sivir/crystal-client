@@ -30,8 +30,7 @@
 	<p>gamemode: {gamemode}</p>
 	<p>state: {$state.phase}</p>
 	<p>current lobby: {JSON.stringify($state.lobby)}</p>
-	<p>current champ select: {JSON.stringify($state.champ_select)}</p>
-	<p>current champ select names: {JSON.stringify(Object.values($state.champion_dragon.data).filter(champion => $state.champ_select.includes(parseInt(champion.key))).map(x => x.name))}</p>
+	<p>current champ select: {JSON.stringify($state.champ_select.map(x => $state.champion_names[x]))}</p>
 	<p>other stuff: {JSON.stringify($state.table_challenges.filter(x => x.gameModes.includes("ARAM")).map(x => x.name))}</p>
 	<table>
 		{#each $state.champ_select as champion}

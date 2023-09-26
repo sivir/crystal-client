@@ -11,11 +11,12 @@
 
 	// different side panel pages
 	enum Page {
-		champions, // champion table with mastery
 		profile, // just a list of challenges
+		champions, // champion table with mastery
 		globe, // globetrotters + harmony list
 		search, // search for another summoner, compare challenge progress
 		live, // live lobby then champ select data
+		eternals, // eternals progression and collection
 		settings, // settings
 	}
 
@@ -28,7 +29,7 @@
 	$: if (lockfile_exists) {
 		invoke("process_lockfile");
 		invoke("start_lcu_websocket", {endpoints: ["OnJsonApiEvent_lol-gameflow_v1_gameflow-phase", "OnJsonApiEvent_lol-champ-select_v1_session", "OnJsonApiEvent_lol-lobby_v2_lobby", "OnJsonApiEvent_lol-gameflow_v1_session"]});
-		invoke("http_retry", {endpoint: "help"}).then(c => console.log("help", c));
+		invoke("http_retry", {endpoint: "lol-statstones/v2/player-statstones-self/1"}).then(c => console.log("help", c));
 	}
 	
 	type ChampSelect = {

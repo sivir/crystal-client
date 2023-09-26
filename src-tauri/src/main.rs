@@ -92,6 +92,7 @@ async fn update_summoner_id(state: tauri::State<'_, Data>) -> Result<(), ()> {
 	let res = http_retry("lol-summoner/v1/current-summoner", state.clone()).await.unwrap();
 	let mut data = state.0.lock().await;
 	data.summoner_id = res["summonerId"].to_string();
+	println!("puuid: {}", res["puuid"].to_string());
 
 	Ok(())
 }
