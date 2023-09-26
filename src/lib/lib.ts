@@ -1,3 +1,4 @@
+import { createClient } from "@supabase/supabase-js";
 import {writable} from "svelte/store";
 import type {Writable} from "svelte/store";
 
@@ -27,11 +28,14 @@ type ChampionShard = {
 	storeItemId: number;
 }
 
+type ChallengeData = {
+	[key: number]: Challenge
+};
+
 type State = {
+	puuid: string;
 	champion_data: unknown;
-	challenge_data: {
-		[key: number]: Challenge
-	};
+	challenge_data: ChallengeData;
 	phase: string;
 	lobby: string[];
 	champ_select: number[];
@@ -44,6 +48,7 @@ type State = {
 }
 
 let state: Writable<State> = writable({
+	puuid: "",
 	champion_data: {},
 	challenge_data: {},
 	phase: "None",
@@ -55,5 +60,7 @@ let state: Writable<State> = writable({
 	table_challenges: []
 });
 
-export { state };
-export type { Challenge, CommunityDragonChampion };
+const supabase = createClient('https://jvnhtmgsncslprdrnkth.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2bmh0bWdzbmNzbHByZHJua3RoIiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTQ2Mjc4ODMsImV4cCI6MjAxMDIwMzg4M30.OOjwsPjGHEc-x8MlhrOX64tJTNENqKqEq2635HKErrk');
+
+export { state, supabase };
+export type { Challenge, CommunityDragonChampion, ChallengeData };

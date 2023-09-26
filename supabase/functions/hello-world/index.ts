@@ -14,7 +14,7 @@ const corsHeaders = {
 
 serve(async (req) => {
 	if (req.method === 'OPTIONS') {
-		return new Response('ok', { headers: corsHeaders })
+		return new Response('ok', { headers: corsHeaders });
 	};
 	const x = await req.json();
 	const { name } = x;

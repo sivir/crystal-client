@@ -3,19 +3,11 @@
 	import {listen} from "@tauri-apps/api/event"
 	import {appWindow} from '@tauri-apps/api/window'
 
-	import {createClient} from "@supabase/supabase-js";
-
 	import ChallengeTable from "./lib/ChallengeTable.svelte";
 	import ChampionTable from "./lib/ChampionTable.svelte";
 	import Settings from "./lib/Settings.svelte";
 	import Live from "./lib/Live.svelte";
-	import {state} from "./lib/lib";
-
-	const supabase = createClient('https://jvnhtmgsncslprdrnkth.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2bmh0bWdzbmNzbHByZHJua3RoIiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTQ2Mjc4ODMsImV4cCI6MjAxMDIwMzg4M30.OOjwsPjGHEc-x8MlhrOX64tJTNENqKqEq2635HKErrk');
-
-	supabase.functions.invoke('hello-world', {
-		body: { name: 'Functions' },
-	}).then(x => console.log("supa", x));
+	import {state, supabase} from "./lib/lib";
 
 	// different side panel pages
 	enum Page {
@@ -37,7 +29,12 @@
 	$: if (lockfile_exists) {
 		invoke("process_lockfile");
 		invoke("start_lcu_websocket", {endpoints: ["OnJsonApiEvent_lol-gameflow_v1_gameflow-phase", "OnJsonApiEvent_lol-champ-select_v1_session", "OnJsonApiEvent_lol-lobby_v2_lobby", "OnJsonApiEvent_lol-gameflow_v1_session"]});
-		invoke("http_retry", {endpoint: "lol-statstones/v2/player-statstones-self/1"}).then(c => console.log("help", c));
+		invoke("http_retry", {endpoint: "help"}).then(c => console.log("help", c));
+		invoke("update_summoner_id").then(() => {
+			invoke("get_puuid").then(x => {
+				$state.puuid = x as string;
+			});
+		});
 	}
 	
 	type ChampSelect = {

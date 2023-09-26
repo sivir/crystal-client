@@ -88,11 +88,18 @@ async fn update_gameflow_phase(app_handle: AppHandle, state: tauri::State<'_, Da
 }
 
 #[tauri::command]
+async fn get_puuid(state: tauri::State<'_, Data>) -> Result<String, ()> {
+	let data = state.0.lock().await;
+	let puuid = data.puuid.clone();
+	Ok(puuid)
+}
+
+#[tauri::command]
 async fn update_summoner_id(state: tauri::State<'_, Data>) -> Result<(), ()> {
 	let res = http_retry("lol-summoner/v1/current-summoner", state.clone()).await.unwrap();
 	let mut data = state.0.lock().await;
 	data.summoner_id = res["summonerId"].to_string();
-	println!("puuid: {}", res["puuid"].to_string());
+	data.puuid = res["puuid"].to_string();
 
 	Ok(())
 }
@@ -305,7 +312,9 @@ fn main() {
 			http_generic,
 			get_champion_map,
 			update_gameflow_phase,
-			update_champ_select
+			update_champ_select,
+			update_summoner_id,
+			get_puuid
 		])
 		.on_system_tray_event(handle_tray_event)
 		.on_window_event(|event| match event.event() {

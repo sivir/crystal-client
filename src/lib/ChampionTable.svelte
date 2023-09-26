@@ -1,7 +1,7 @@
 <script lang="ts">
 	import {invoke} from "@tauri-apps/api/tauri";
-	import {state} from "./lib";
-	import type {CommunityDragonChampion} from "./lib";
+	import {state, supabase} from "./lib";
+	import type {CommunityDragonChampion, ChallengeData} from "./lib";
 
 	export let lockfile_exists: boolean;
 
@@ -26,19 +26,23 @@
 	let search = "";
 
 	function refresh() {
-		invoke("process_lockfile");
-		invoke("get_champion_map").then(champion_data => {
-			console.log("dragon", champion_data);
-			$state.champion_dragon = champion_data as CommunityDragonChampion;
-		});
+		//invoke("process_lockfile");
 		invoke("update_all_data").then(() => {
 			invoke("get_challenge_data").then(challenge_data => {
 				invoke("get_champion_data").then(champion_data => {
-					$state.challenge_data = challenge_data as any;
+					$state.challenge_data = challenge_data as ChallengeData;
 					mastery_data = champion_data as MasteryData[];
+					
+					supabase.functions.invoke("update-user", {
+						body: { id: $state.puuid, data: $state.challenge_data },
+					});
 				})
 			})
 		});
+	}
+
+	$: if ($state.phase === "EndOfGame") {
+		refresh();
 	}
 
 	$: state && console.log("state", $state);
@@ -66,14 +70,7 @@
 			$state.champion_dragon = champion_data as CommunityDragonChampion;
 		});
 
-		invoke("update_all_data").then(() => {
-			invoke("get_challenge_data").then(challenge_data => {
-				invoke("get_champion_data").then(champion_data => {
-					$state.challenge_data = challenge_data as any;
-					mastery_data = champion_data as MasteryData[];
-				})
-			})
-		});
+		refresh();
 	}
 
 	$: if ($state.champion_dragon) {
