@@ -1,25 +1,43 @@
-// Follow this setup guide to integrate the Deno language server with your editor:
-// https://deno.land/manual/getting_started/setup_your_environment
-// This enables autocomplete, go to definition, etc.
+// using deno since supabase uses deno
+import * as postgres from 'https://deno.land/x/postgres@v0.14.2/mod.ts'
+import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+const database_url = Deno.env.get('SUPABASE_DB_URL')!
+const pool = new postgres.Pool(database_url, 3, true);
 
-console.log("Hello from Functions!")
+console.log("Hello from Functions!");
+
+const corsHeaders = {
+	'Access-Control-Allow-Origin': '*',
+	'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
 
 serve(async (req) => {
-  const { name } = await req.json()
-  const data = {
-    message: `Hello ${name}!`,
-  }
+	if (req.method === 'OPTIONS') {
+		return new Response('ok', { headers: corsHeaders })
+	};
+	const x = await req.json();
+	const { name } = x;
 
-  return new Response(
-    JSON.stringify(data),
-    { headers: { "Content-Type": "application/json" } },
-  )
-})
+	try {
+		const connection = await pool.connect();
+		const result = await connection.queryObject`SELECT * FROM test WHERE id = ${name}`;
+		const animals = result.rows;
+		console.log(animals);
 
-// To invoke:
-// curl -i --location --request POST 'http://localhost:54321/functions/v1/' \
-//   --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0' \
-//   --header 'Content-Type: application/json' \
-//   --data '{"name":"Functions"}'
+		connection.release();
+		return new Response(JSON.stringify(animals),
+			{
+				headers: {
+					...corsHeaders,
+					"Content-Type": "application/json"
+				}
+			},
+		);
+	} catch (err) {
+		console.error(err)
+		return new Response(String(err?.message ?? err), { status: 500, headers: corsHeaders });
+	}
+});
+
+// ./curl -L -X POST 'https://jvnhtmgsncslprdrnkth.supabase.co/functions/v1/hello-world' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2bmh0bWdzbmNzbHByZHJua3RoIiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTQ2Mjc4ODMsImV4cCI6MjAxMDIwMzg4M30.OOjwsPjGHEc-x8MlhrOX64tJTNENqKqEq2635HKErrk' --data '{\"name\":\"Functions\"}'

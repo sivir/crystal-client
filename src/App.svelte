@@ -3,11 +3,19 @@
 	import {listen} from "@tauri-apps/api/event"
 	import {appWindow} from '@tauri-apps/api/window'
 
+	import {createClient} from "@supabase/supabase-js";
+
 	import ChallengeTable from "./lib/ChallengeTable.svelte";
 	import ChampionTable from "./lib/ChampionTable.svelte";
 	import Settings from "./lib/Settings.svelte";
 	import Live from "./lib/Live.svelte";
 	import {state} from "./lib/lib";
+
+	const supabase = createClient('https://jvnhtmgsncslprdrnkth.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2bmh0bWdzbmNzbHByZHJua3RoIiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTQ2Mjc4ODMsImV4cCI6MjAxMDIwMzg4M30.OOjwsPjGHEc-x8MlhrOX64tJTNENqKqEq2635HKErrk');
+
+	supabase.functions.invoke('hello-world', {
+		body: { name: 'Functions' },
+	}).then(x => console.log("supa", x));
 
 	// different side panel pages
 	enum Page {
