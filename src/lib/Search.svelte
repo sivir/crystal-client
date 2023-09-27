@@ -8,7 +8,7 @@
 	search: <input bind:value={search} />
     <button on:click={() => {
         supabase.functions.invoke("get-user", {
-            body: { id: search },
+            body: { summoner_name: search },
         }).then(x => {
             console.log("get_user", x);
             temp = x.data;

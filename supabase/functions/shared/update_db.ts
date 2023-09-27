@@ -18,6 +18,7 @@ async function update_db(id: string, data: any) {
 async function get_user(id: string) {
     const connection = await pool.connect();
     const res = await connection.queryObject`SELECT * FROM test WHERE id = ${id}`;
+    console.log("get_user res", res);
     connection.release();
     return res.rows;
 }

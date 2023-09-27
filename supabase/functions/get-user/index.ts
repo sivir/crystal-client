@@ -18,7 +18,7 @@ serve(async (req) => {
 		const summoner_response = await fetch(`https://${region}.api.riotgames.com/lol/summoner/v4/summoners/by-name/${summoner_name}?api_key=${riot_api_key}`);
 		const summoner_data = await summoner_response.json();
 		const id = summoner_data.puuid;
-		console.log(id, "id");
+		console.log("summoner_data", summoner_data);
 		const res = await get_user(id);
 		if (res.length === 0) {
 			const response = await fetch(`https://${region}.api.riotgames.com/lol/challenges/v1/player-data/${id}?api_key=${riot_api_key}`);
@@ -27,6 +27,7 @@ serve(async (req) => {
 			await update_db(id, data);
 			return new Response(JSON.stringify(data), { headers: cors_headers });
 		} else {
+			console.log("res", res[0]);
 			return new Response(JSON.stringify(res[0].test_data), { headers: cors_headers });
 		}
 	} catch (err) {
