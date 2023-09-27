@@ -101,8 +101,7 @@
 <main>
 	<div>
 		<button on:click={refresh}>refresh</button>
-		search: 
-		<input bind:value={search} />
+		search: <input bind:value={search} />
 		{search}
 	</div>
 	<div id="tab">

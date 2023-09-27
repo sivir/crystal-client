@@ -7,7 +7,8 @@
 	import ChampionTable from "./lib/ChampionTable.svelte";
 	import Settings from "./lib/Settings.svelte";
 	import Live from "./lib/Live.svelte";
-	import {state, supabase} from "./lib/lib";
+	import Search from "./lib/Search.svelte";
+	import {state} from "./lib/lib";
 
 	// different side panel pages
 	enum Page {
@@ -25,12 +26,6 @@
 	let page = Page.champions;
 
 	console.log("stuff");
-
-	supabase.functions.invoke("get-user", {
-		body: { id: "4bEiYz4RD9MO1uLPZtSZtpvnWrzaVkzQvCkl0lhDXGNQChvXJCF9Hcgly_un4lrdU3Nr-KaDhQdQEA" },
-	}).then(x => {
-		console.log("get_user", x);
-	});
 
 	$: if (lockfile_exists) {
 		invoke("process_lockfile");
@@ -118,6 +113,7 @@
 				<button on:click={() => page = Page.profile}>profile</button>
 				<button on:click={() => page = Page.champions}>champions</button>
 				<button on:click={() => page = Page.settings}>settings</button>
+				<button on:click={() => page = Page.search}>search</button>
 				<button on:click={() => page = Page.live}>live {#if $state.phase === "Lobby" || $state.phase === "ChampSelect"}🟢{/if}</button>
 			</div>
 		</div>
@@ -129,6 +125,9 @@
 			</div>
 			<div class="test" hidden={page !== Page.profile}>
 				<ChallengeTable/>
+			</div>
+			<div class="test" hidden={page !==Page.search}>
+				<Search/>
 			</div>
 			<div class="test" hidden={page !== Page.settings}>
 				<Settings/>

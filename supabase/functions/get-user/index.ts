@@ -20,9 +20,9 @@ serve(async (req) => {
 			const data = await response.json();
 			console.log("data", data);
 			await update_db(id, data);
-			return new Response(data, { headers: cors_headers });
+			return new Response(JSON.stringify(data), { headers: cors_headers });
 		} else {
-			return new Response(res[0].test_data, { headers: cors_headers });
+			return new Response(JSON.stringify(res[0].test_data), { headers: cors_headers });
 		}
 	} catch (err) {
 		console.error(err)
