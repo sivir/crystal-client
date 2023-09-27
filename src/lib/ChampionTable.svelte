@@ -26,6 +26,7 @@
 	let search = "";
 
 	function refresh() {
+		console.log("refresh called");
 		//invoke("process_lockfile");
 		invoke("update_all_data").then(() => {
 			invoke("get_challenge_data").then(challenge_data => {
@@ -41,11 +42,11 @@
 		});
 	}
 
-	$: if ($state.phase === "EndOfGame") {
+	let state_phase = "None";
+	$: state_phase = $state.phase;
+	$: if (state_phase === "EndOfGame") {
 		refresh();
 	}
-
-	$: state && console.log("state", $state);
 
 	$: $state.table_challenges = Object.values($state.challenge_data).filter(challenge => {
 		if (challenge.category === "LEGACY") {
@@ -57,10 +58,6 @@
 		}
 		return (challenge.idListType === "CHAMPION" && challenge.availableIds.length === 0);
 	});
-
-	$: $state.table_challenges && console.log("table_challenges", $state.table_challenges);
-
-	$: $state.champion_names && console.log("champion_names", $state.champion_names);
 
 	$: $state.champion_names = Object.fromEntries(Object.entries($state.champion_dragon.data).map(([, value]) => [value.key, value.name]));
 

@@ -231,9 +231,15 @@ async fn start_lcu_websocket(endpoints: Vec<&str>, app_handle: AppHandle, state:
 										"OnJsonApiEvent_lol-champ-select_v1_session" => {
 											if json[2]["eventType"].as_str().unwrap() != "Delete" {
 												app_handle.emit_all("champ_select", json[2]["data"].clone()).unwrap();
+												app_handle.emit_all("console_log", json.clone()).unwrap();
+												
 											} else {
 												app_handle.emit_all("champ_select", serde_json::from_str::<Value>("{\"myTeam\": [], \"benchChampions\": []}").unwrap()).unwrap();
 											}
+										}
+										"OnJsonApiEvent_lol-gameflow_v1_session" => {
+											app_handle.emit_all("gameflow", json[2]["data"]["phase"].as_str()).unwrap();
+											app_handle.emit_all("gamemode", json[2]["data"]["queue"]["gameMode"].as_str()).unwrap();
 										}
 										_ => {
 											println!("event not found: {json}");

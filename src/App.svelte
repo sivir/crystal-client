@@ -26,9 +26,15 @@
 
 	console.log("stuff");
 
+	supabase.functions.invoke("get-user", {
+		body: { id: "4bEiYz4RD9MO1uLPZtSZtpvnWrzaVkzQvCkl0lhDXGNQChvXJCF9Hcgly_un4lrdU3Nr-KaDhQdQEA" },
+	}).then(x => {
+		console.log("get_user", x);
+	});
+
 	$: if (lockfile_exists) {
 		invoke("process_lockfile");
-		invoke("start_lcu_websocket", {endpoints: ["OnJsonApiEvent_lol-gameflow_v1_gameflow-phase", "OnJsonApiEvent_lol-champ-select_v1_session", "OnJsonApiEvent_lol-lobby_v2_lobby", "OnJsonApiEvent_lol-gameflow_v1_session"]});
+		invoke("start_lcu_websocket", {endpoints: ["OnJsonApiEvent_lol-champ-select_v1_session", "OnJsonApiEvent_lol-lobby_v2_lobby", "OnJsonApiEvent_lol-gameflow_v1_session"]});
 		invoke("http_retry", {endpoint: "help"}).then(c => console.log("help", c));
 		invoke("update_summoner_id").then(() => {
 			invoke("get_puuid").then(x => {
@@ -50,6 +56,9 @@
 		summonerName: string;
 	}
 
+	listen("console_log", x => {
+		console.log("console_log", x);
+	});
 	listen("lockfile", x => {
 		const payload = x.payload;
 		console.log(payload, lockfile_exists);
