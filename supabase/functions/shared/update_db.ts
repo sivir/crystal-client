@@ -1,5 +1,5 @@
 // using deno since supabase uses deno
-import * as postgres from 'https://deno.land/x/postgres@v0.14.2/mod.ts'
+import * as postgres from 'https://deno.land/x/postgres@v0.14.2/mod.ts';
 
 const database_url = Deno.env.get('SUPABASE_DB_URL')!
 const riot_api_key = Deno.env.get('RIOT_API_KEY')!
@@ -32,7 +32,7 @@ async function update_db_lcu_data(id: string, data: any) {
 
 async function get_user(id: string) {
     const connection = await pool.connect();
-    const res = await connection.queryObject`SELECT * FROM test WHERE id = ${id}`;
+    const res = await connection.queryObject`SELECT * FROM users WHERE id = ${id}`;
     console.log("get_user res", res);
     connection.release();
     return res.rows;

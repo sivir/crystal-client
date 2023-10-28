@@ -1,6 +1,6 @@
 // using deno since supabase uses deno
-import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
-import { update_db, cors_headers, get_user } from '../shared/update_db.ts';
+import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
+import { update_db, cors_headers, get_user, update_riot_data } from '../shared/update_db.ts';
 
 const riot_api_key = Deno.env.get('RIOT_API_KEY')!
 
@@ -26,7 +26,7 @@ serve(async (req) => {
 		console.log("res", res);
 		// if not, update db with riot data
 		if (res.length === 0) {
-			const data = await update_riot_id(id);
+			const data = await update_riot_data(id);
 			return new Response(JSON.stringify({riot_data: data, lcu_data: {}}), { headers: cors_headers });
 		} else {
 			// check when riot data was last updated
@@ -35,7 +35,7 @@ serve(async (req) => {
 			const diff = now.getTime() - last_updated.getTime();
 			// if it's been 10 minutes, update it
 			if (diff > 10 * 60 * 1000) {
-				const data = await update_riot_id(id);
+				const data = await update_riot_data(id);
 				return new Response(JSON.stringify({riot_data: data, lcu_data: res[0].lcu_data}), { headers: cors_headers });
 			} else {
 				// otherwise, return it

@@ -1,4 +1,5 @@
 <script lang="ts">
+    import Profile from "./Profile.svelte";
     import { supabase } from "./lib";
     let search: string = "";
     let temp: string = "";
@@ -14,5 +15,6 @@
             temp = x.data;
 	    });
     }} >button</button>
+    <Profile id="aas" />
     {temp}
 </main>

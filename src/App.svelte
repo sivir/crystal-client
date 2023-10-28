@@ -8,7 +8,7 @@
 	import Settings from "./lib/Settings.svelte";
 	import Live from "./lib/Live.svelte";
 	import Search from "./lib/Search.svelte";
-	import {state} from "./lib/lib";
+	import {state,supabase} from "./lib/lib";
 
 	// different side panel pages
 	enum Page {
@@ -36,6 +36,8 @@
 				$state.puuid = x as string;
 			});
 		});
+		
+		supabase.functions.invoke("challenge-info");
 	}
 	
 	type ChampSelect = {
