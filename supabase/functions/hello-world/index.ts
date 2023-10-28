@@ -14,7 +14,7 @@ const cors_headers = {
 serve(async (req) => {
 	if (req.method === 'OPTIONS') {
 		return new Response('ok', { headers: cors_headers });
-	};
+	}
 
 	const x = await req.json();
 	const { id, data } = x;
@@ -23,7 +23,7 @@ serve(async (req) => {
 		update_db(id, data);
 		return new Response('ok', { headers: cors_headers });
 	} catch (err) {
-		console.error(err)
+		console.error(err);
 		return new Response(String(err?.message ?? err), { status: 500, headers: cors_headers });
 	}
 });

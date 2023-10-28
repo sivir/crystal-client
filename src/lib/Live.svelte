@@ -33,6 +33,12 @@
 	<p>current champ select: {JSON.stringify($state.champ_select.map(x => $state.champion_names[x]))}</p>
 	<p>other stuff: {JSON.stringify($state.table_challenges.filter(x => x.gameModes.includes("ARAM")).map(x => x.name))}</p>
 	<table>
+		<tr>
+			<td>Champion</td>
+			{#each current_challenges as challenge}
+				<td>{challenge.name}</td>
+			{/each}
+		</tr>
 		{#each $state.champ_select as champion}
 			<tr>
 				<td>{$state.champion_names[champion]}</td>

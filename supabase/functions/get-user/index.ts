@@ -5,27 +5,39 @@ import { update_db, cors_headers, get_user } from '../../shared/update_db.ts';
 const riot_api_key = Deno.env.get('RIOT_API_KEY')!
 
 serve(async (req) => {
+	// allow calling from browser
 	if (req.method === 'OPTIONS') {
 		return new Response('ok', { headers: cors_headers });
-	};
+	}
 
+	// extract id from request
 	const x = await req.json();
 	const { id } = x;
 
 	try {
+		// check if user exists in db
 		const res = await get_user(id);
 		console.log("res", res);
+		// if not, update db with riot data
 		if (res.length === 0) {
-			const response = await fetch(`https://na1.api.riotgames.com/lol/challenges/v1/player-data/${id}?api_key=${riot_api_key}`);
-			const data = await response.json();
-			console.log("data", data);
-			await update_db(id, data);
-			return new Response(JSON.stringify(data), { headers: cors_headers });
+			const data = await update_riot_id(id);
+			return new Response(JSON.stringify({riot_data: data, lcu_data: {}}), { headers: cors_headers });
 		} else {
-			return new Response(JSON.stringify(res[0].test_data), { headers: cors_headers });
+			// check when riot data was last updated
+			const last_updated = new Date(res[0].last_update_riot);
+			const now = new Date();
+			const diff = now.getTime() - last_updated.getTime();
+			// if it's been 10 minutes, update it
+			if (diff > 10 * 60 * 1000) {
+				const data = await update_riot_id(id);
+				return new Response(JSON.stringify({riot_data: data, lcu_data: res[0].lcu_data}), { headers: cors_headers });
+			} else {
+				// otherwise, return it
+				return new Response(JSON.stringify({riot_data: res[0].riot_data, lcu_data: res[0].lcu_data}), { headers: cors_headers });
+			}
 		}
 	} catch (err) {
-		console.error(err)
+		console.error(err);
 		return new Response(String(err?.message ?? err), { status: 500, headers: cors_headers });
 	}
 });
