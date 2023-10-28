@@ -1,7 +1,7 @@
 // using deno since supabase uses deno
 import * as postgres from 'https://deno.land/x/postgres@v0.14.2/mod.ts'
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
-import { update_db } from '../../shared/update_db.ts';
+import { update_db } from '../shared/update_db.ts';
 
 const database_url = Deno.env.get('SUPABASE_DB_URL')!
 const pool = new postgres.Pool(database_url, 3, true);
