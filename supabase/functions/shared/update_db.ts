@@ -20,13 +20,20 @@ async function update_riot_data(id: string) {
 
 async function update_db_riot_data(id: string, data: any) {
     const connection = await pool.connect();
-    await connection.queryObject`INSERT INTO users (id, riot_data) VALUES (${id}, ${data}) ON CONFLICT (id) DO UPDATE SET riot_data = ${data}`;
+    const time = new Date();
+    await connection.queryObject`INSERT INTO users (id, riot_data, last_update_riot) VALUES (${id}, ${data}, ${time}) ON CONFLICT (id) DO UPDATE SET (riot_data, last_update_riot) = (${data}, ${time})`;
 	connection.release();
 }
 
 async function update_db_lcu_data(id: string, data: any) {
     const connection = await pool.connect();
-    await connection.queryObject`INSERT INTO users (id, lcu_data) VALUES (${id}, ${data}) ON CONFLICT (id) DO UPDATE SET lcu_data = ${data}`;
+    const user = await get_user(id);
+    if (user.length === 0) {
+        await update_riot_data(id);
+    }
+    const time = new Date();
+    // update lcu data and time for user without inserting
+    await connection.queryObject`UPDATE users SET (lcu_data, last_update_lcu) = (${data}, ${time}) WHERE id = ${id}`;
 	connection.release();
 }
 
@@ -38,4 +45,4 @@ async function get_user(id: string) {
     return res.rows;
 }
 
-export { cors_headers, update_db_riot_data, get_user, update_riot_data };
+export { cors_headers, update_db_riot_data, get_user, update_riot_data, update_db_lcu_data };

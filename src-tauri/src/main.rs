@@ -100,6 +100,9 @@ async fn update_summoner_id(state: tauri::State<'_, Data>) -> Result<(), ()> {
 	let mut data = state.0.lock().await;
 	data.summoner_id = res["summonerId"].to_string();
 	data.puuid = res["puuid"].to_string();
+	println!("summoner id: {}", data.summoner_id);
+	println!("puuid: {}", data.puuid);
+	println!("{:?}", res);
 
 	Ok(())
 }
