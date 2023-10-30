@@ -9,10 +9,14 @@ serve(async (req) => {
 	}
 
 	const x = await req.json();
-	const { id, data } = x;
+	const { riot_id, data } = x;
 
 	try {
-		update_db_lcu_data(id, data);
+		const id = riot_id.split("#");
+		const summoner_response = await fetch(`https://americas.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${id[0]}/${id[1]}?api_key=${riot_api_key}`);
+		const summoner_data = await summoner_response.json();
+		const puuid = summoner_data.puuid;
+		update_db_lcu_data(puuid, data);
 		return new Response('ok', { headers: cors_headers });
 	} catch (err) {
 		console.error(err);

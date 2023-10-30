@@ -32,12 +32,12 @@
 		invoke("start_lcu_websocket", {endpoints: ["OnJsonApiEvent_lol-champ-select_v1_session", "OnJsonApiEvent_lol-lobby_v2_lobby", "OnJsonApiEvent_lol-gameflow_v1_session"]});
 		invoke("http_retry", {endpoint: "help"}).then(c => console.log("help", c));
 		invoke("update_summoner_id").then(() => {
-			invoke("get_puuid").then(x => {
-				$state.puuid = x as string;
+			invoke("get_riot_id").then(x => {
+				$state.riot_id = x as string;
 			});
 		});
 		
-		supabase.functions.invoke("challenge-info");
+		supabase.functions.invoke("challenge-info").then(x => console.log(JSON.parse(x.data)));
 	}
 	
 	type ChampSelect = {

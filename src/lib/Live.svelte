@@ -1,7 +1,7 @@
 <script lang="ts">
 	import {invoke} from "@tauri-apps/api/tauri";
 	import {state} from "./lib";
-	import type {Challenge, ChallengeData} from "./lib";
+	import type {Challenge} from "./lib";
 
 	type GameflowSession = {
 		gameData: {

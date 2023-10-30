@@ -88,10 +88,10 @@ async fn update_gameflow_phase(app_handle: AppHandle, state: tauri::State<'_, Da
 }
 
 #[tauri::command]
-async fn get_puuid(state: tauri::State<'_, Data>) -> Result<String, ()> {
+async fn get_riot_id(state: tauri::State<'_, Data>) -> Result<String, ()> {
 	let data = state.0.lock().await;
-	let puuid = data.puuid.clone();
-	Ok(puuid)
+	let riot_id = data.riot_id.clone();
+	Ok(riot_id)
 }
 
 #[tauri::command]
@@ -99,9 +99,9 @@ async fn update_summoner_id(state: tauri::State<'_, Data>) -> Result<(), ()> {
 	let res = http_retry("lol-summoner/v1/current-summoner", state.clone()).await.unwrap();
 	let mut data = state.0.lock().await;
 	data.summoner_id = res["summonerId"].to_string();
-	data.puuid = res["puuid"].to_string();
-	println!("summoner id: {}", data.summoner_id);
-	println!("puuid: {}", data.puuid);
+	let name = res["gameName"].to_string();
+	let tag = res["tagLine"].to_string();
+	data.riot_id = format!("{}#{}", name, tag);
 	println!("{:?}", res);
 
 	Ok(())
@@ -145,6 +145,13 @@ async fn get_champion_map() -> Value {
 	// println!("{}", version);
 	let champ_url = format!("https://ddragon.leagueoflegends.com/cdn/{version}/data/en_US/champion.json");
 	let c = http_generic(champ_url.as_str()).await.unwrap();
+	return c;
+}
+
+#[tauri::command]
+async fn get_challenges_map() -> Value {
+	let challenges_url = "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/en_gb/v1/challenges.json";
+	let c = http_generic(challenges_url).await.unwrap();
 	return c;
 }
 
@@ -323,7 +330,8 @@ fn main() {
 			update_gameflow_phase,
 			update_champ_select,
 			update_summoner_id,
-			get_puuid
+			get_riot_id,
+			get_challenges_map
 		])
 		.on_system_tray_event(handle_tray_event)
 		.on_window_event(|event| match event.event() {

@@ -30,10 +30,15 @@ type ChampionShard = {
 
 type ChallengeData = {
 	[key: number]: Challenge
-};
+}
+
+type Title = {
+	name: string;
+	itemId: number;
+}
 
 type State = {
-	puuid: string;
+	riot_id: string;
 	champion_data: unknown;
 	challenge_data: ChallengeData;
 	phase: string;
@@ -45,16 +50,20 @@ type State = {
 	}
 	champ_shards: ChampionShard[];
 	table_challenges: Challenge[];
+	titles: {
+		[key: string]: Title
+	}
 }
 
 let state: Writable<State> = writable({
-	puuid: "",
+	riot_id: "#",
 	champion_data: {},
 	challenge_data: {},
 	phase: "None",
 	lobby: [],
 	champ_select: [],
 	champion_names: {},
+	titles: {},
 	champion_dragon: { data: {} },
 	champ_shards: [],
 	table_challenges: []

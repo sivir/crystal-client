@@ -12,7 +12,7 @@ pub struct InnerData {
 	pub challenge_data: Value, // challenge completion/tier data
 	pub champion_data: Value, // champion mastery data
 	pub summoner_id: String, // summoner id of current player
-	pub puuid: String, // puuid of current player
+	pub riot_id: String, // puuid of current player
 }
 
 impl Default for InnerData {
@@ -27,7 +27,7 @@ impl Default for InnerData {
 			challenge_data: Value::Null,
 			champion_data: Value::Null,
 			summoner_id: "".to_string(),
-			puuid: "".to_string(),
+			riot_id: "#".to_string(),
 		}
 	}
 }
