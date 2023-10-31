@@ -91,6 +91,7 @@ async fn update_gameflow_phase(app_handle: AppHandle, state: tauri::State<'_, Da
 async fn get_riot_id(state: tauri::State<'_, Data>) -> Result<String, ()> {
 	let data = state.0.lock().await;
 	let riot_id = data.riot_id.clone();
+	
 	Ok(riot_id)
 }
 
@@ -99,8 +100,8 @@ async fn update_summoner_id(state: tauri::State<'_, Data>) -> Result<(), ()> {
 	let res = http_retry("lol-summoner/v1/current-summoner", state.clone()).await.unwrap();
 	let mut data = state.0.lock().await;
 	data.summoner_id = res["summonerId"].to_string();
-	let name = res["gameName"].to_string();
-	let tag = res["tagLine"].to_string();
+	let name = res["gameName"].as_str().unwrap();
+	let tag = res["tagLine"].as_str().unwrap();
 	data.riot_id = format!("{}#{}", name, tag);
 	println!("{:?}", res);
 

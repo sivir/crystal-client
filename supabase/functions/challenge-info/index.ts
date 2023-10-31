@@ -1,8 +1,6 @@
 // using deno since supabase uses deno
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
-import { update_db, cors_headers, get_user, update_riot_data } from '../shared/update_db.ts';
-
-const riot_api_key = Deno.env.get('RIOT_API_KEY')!
+import { update_db, cors_headers, get_user, update_riot_data, riot_api_key } from '../shared/update_db.ts';
 
 serve(async (req) => {
 	// allow calling from browser

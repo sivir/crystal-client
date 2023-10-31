@@ -27,7 +27,9 @@ import {supabase, state} from "./lib";
             {#each Object.entries($state.challenge_data) as [_, challenge]}
                 <tr>
                     <td>{challenge.name}</td>
-                    <!-- <td>{data.riot_data.challenges.filter(x => x.challengeId === challenge.id)[0].level}</td> -->
+                    {#each data.riot_data.challenges.filter(x => x.challengeId === challenge.id) as a}
+                        <td>{a.level}</td>
+                    {/each}
                 </tr>
             {/each}
         </table>

@@ -45,4 +45,4 @@ async function get_user(id: string) {
     return res.rows;
 }
 
-export { cors_headers, update_db_riot_data, get_user, update_riot_data, update_db_lcu_data };
+export { cors_headers, update_db_riot_data, get_user, update_riot_data, update_db_lcu_data, riot_api_key };

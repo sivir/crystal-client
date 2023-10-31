@@ -35,7 +35,7 @@
 					mastery_data = champion_data as MasteryData[];
 					
 					supabase.functions.invoke("update-user", {
-						body: { id: $state.puuid, data: $state.challenge_data },
+						body: { riot_id: $state.riot_id, data: $state.challenge_data },
 					});
 				})
 			})
