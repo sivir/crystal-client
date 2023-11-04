@@ -12,6 +12,7 @@ type Challenge = {
 	availableIds: number[];
 	idListType: string;
 	gameModes: string[];
+	thresholds: {[key: string]: {value: number}};
 }
 
 type CommunityDragonChampion = {
@@ -29,7 +30,7 @@ type ChampionShard = {
 }
 
 type ChallengeData = {
-	[key: number]: Challenge
+	[key: number]: Challenge;
 }
 
 type Title = {

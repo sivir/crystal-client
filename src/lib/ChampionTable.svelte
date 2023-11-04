@@ -154,4 +154,12 @@
         display: flex;
         flex-direction: column;
 	}
+
+	table { 
+		border-collapse: collapse; 
+	}
+
+	table > :global(:nth-child(151)) {
+		border-bottom: 1px solid red;
+	}
 </style>

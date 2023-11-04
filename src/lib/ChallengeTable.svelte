@@ -11,7 +11,6 @@
 </script>
 
 <main>
-	whee
 	<div>
 		<table>
 			{#each Object.entries($state.challenge_data) as [_, challenge]}

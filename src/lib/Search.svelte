@@ -23,7 +23,17 @@ import {supabase, state} from "./lib";
 	    });
     }} >button</button>
     {#if temp !== ""}
-        <table>
+        {#each Object.entries($state.challenge_data) as [_, challenge]}
+            <div class="card">
+                <div>{challenge.name}</div>
+                {#each data.riot_data.challenges.filter(x => x.challengeId === challenge.id) as a}
+                    <div>{a.level}</div>
+                    <div>{a.value}/{JSON.stringify(challenge.thresholds[a.level])}</div>
+                {/each}
+                
+            </div>
+        {/each}
+        <!-- <table>
             {#each Object.entries($state.challenge_data) as [_, challenge]}
                 <tr>
                     <td>{challenge.name}</td>
@@ -33,6 +43,17 @@ import {supabase, state} from "./lib";
                 </tr>
             {/each}
         </table>
-        {temp}
+        {temp} -->
     {/if}
 </main>
+
+<style>
+    .card {
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        margin: 4px;
+        padding: 4px;
+        display: flex;
+        flex-direction: column;
+    }
+</style>

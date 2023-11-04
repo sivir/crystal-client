@@ -167,11 +167,13 @@
 		width: 150px;
 	}
 
+	#sidebuttons > button {
+		padding: 10px;
+	}
+
 	#sidebuttons {
 		display: flex;
 		flex-direction: column;
-		gap: 20px;
-		padding-top: 20px;
 	}
 
 	#sideways {
