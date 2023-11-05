@@ -22,6 +22,12 @@
 	let champions: { [key: number]: Champion } = {};
 	let table_data: Champion[] = [];
 	let mastery_data: MasteryData[];
+	const default_sort = (a: Champion, b : Champion) => {
+		if (b.mastery_level === a.mastery_level)
+			return b.mastery_points - a.mastery_points;
+		return b.mastery_level - a.mastery_level;
+	};
+	let table_sort = default_sort;
 
 	let search = "";
 
@@ -80,11 +86,7 @@
 		}]));
 	}
 
-	$: table_data = Object.values(champions).sort((a, b) => {
-		if (b.mastery_level === a.mastery_level)
-			return b.mastery_points - a.mastery_points;
-		return b.mastery_level - a.mastery_level;
-	});
+	$: table_data = Object.values(champions).sort(table_sort);
 
 	$: if (Object.values(champions).length > 0 && mastery_data) {
 		console.log("champions", champions);
@@ -114,7 +116,14 @@
 				<td>chest</td>
 				{#each $state.table_challenges as challenge}
 					<td>
-						<div title={challenge.description}>{challenge.name}</div>
+						<div title={challenge.description}><button on:click={() => table_sort = (a, b) => {
+							const a_completed = challenge.completedIds.includes(a.id);
+							const b_completed = challenge.completedIds.includes(b.id);
+							if (a_completed === b_completed) {
+								return default_sort(a, b);
+							}
+							return a_completed ? -1 : 1;
+						}}>{challenge.name}</button></div>
 					</td>
 				{/each}
 			</tr>

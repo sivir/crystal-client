@@ -1,5 +1,3 @@
-<!-- FILEPATH: /c:/Users/Jeffrey/IdeaProjects/crystal-client/src/lib/Profile.svelte -->
-
 <script>
     export let id;
 </script>
