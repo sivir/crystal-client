@@ -128,7 +128,12 @@
 				{/each}
 			</tr>
 			</thead>
-			{#each table_data as champion}
+			{#each table_data as champion, i}
+				{#if i === 150}
+					<tr>
+						<td style="text-align: center;" colspan={$state.table_challenges.length + 4}>^ 150 champs ^</td>
+					</tr>
+				{/if}
 				{#if search === "" || champion.name.toLowerCase().includes(search.toLowerCase())}
 					<tr>
 						<td>{champion.name}</td>
@@ -154,14 +159,14 @@
 <style>
 	#tab {
 		height: 100%;
-        overflow: auto;
+		overflow: auto;
 	}
 
 	main {
 		height: 100%;
-        flex: 1;
-        display: flex;
-        flex-direction: column;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
 	}
 
 	table { 

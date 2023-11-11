@@ -1,3 +1,3 @@
 <main>
-    settings
+	settings
 </main>
