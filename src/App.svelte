@@ -51,6 +51,7 @@
 
 	type Lobby = {
 		summonerName: string;
+		puuid: string;
 	}
 
 	listen("console_log", x => {
@@ -79,6 +80,11 @@
 		console.log("lobby", x);
 		const lobby = x.payload as Lobby[];
 		$state.lobby = lobby.map(x => x.summonerName);
+		lobby.forEach(element => {
+			invoke("http_retry", {endpoint: "lol-summoner/v2/summoners/puuid/" + element.puuid}).then(qwe => {
+				console.log(qwe);
+			});
+		});
 	});
 	listen("champ_select", x => {
 		let champ_select = x.payload as ChampSelect;

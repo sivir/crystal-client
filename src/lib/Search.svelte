@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { empty } from "svelte/internal";
-import {supabase, state} from "./lib";
+	import {supabase, state} from "./lib";
 	let search: string = "";
 	let temp: string = "";
 	let data = {
@@ -9,6 +8,31 @@ import {supabase, state} from "./lib";
 		},
 		lcu_data: {},
 	};
+
+	type TableChallenge = {
+		id: string;
+		name: string;
+		description: string;
+		value: number;
+		// prev_threshold: number;
+		// next_threshold: number;
+		// percentile: number;
+		// ranking: number;
+	};
+
+	let combined_data_1: TableChallenge[] = [];
+
+	$: combined_data_1 = Object.values($state.challenge_data).map(challenge => {
+		const data_value = data.riot_data.challenges.filter(x => x.challengeId === challenge.id)[0];
+		const value = data_value?.value ?? 0;
+		let entry = {
+			id: challenge.id.toString(),
+			name: challenge.name,
+			description: challenge.description,
+			value: value,
+		};
+		return entry;
+	});
 </script>
 
 <main>
@@ -23,27 +47,13 @@ import {supabase, state} from "./lib";
 		});
 	}} >button</button>
 	{#if temp !== ""}
-		{#each Object.entries($state.challenge_data) as [_, challenge]}
+		{#each combined_data_1 as challenge}
 			<div class="card">
 				<div>{challenge.name}</div>
-				{#each data.riot_data.challenges.filter(x => x.challengeId === challenge.id) as a}
-					<div>{a.level}</div>
-					<div>{a.value}/{JSON.stringify(challenge.thresholds[a.level])}</div>
-				{/each}
-				
+				<div>{challenge.description}</div>
+				<div>{challenge.value}</div>
 			</div>
 		{/each}
-		<!-- <table>
-			{#each Object.entries($state.challenge_data) as [_, challenge]}
-				<tr>
-					<td>{challenge.name}</td>
-					{#each data.riot_data.challenges.filter(x => x.challengeId === challenge.id) as a}
-						<td>{a.level}</td>
-					{/each}
-				</tr>
-			{/each}
-		</table>
-		{temp} -->
 	{/if}
 </main>
 

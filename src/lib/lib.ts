@@ -40,7 +40,6 @@ type Title = {
 
 type State = {
 	riot_id: string;
-	champion_data: unknown;
 	challenge_data: ChallengeData;
 	phase: string;
 	lobby: string[];
@@ -58,7 +57,6 @@ type State = {
 
 let state: Writable<State> = writable({
 	riot_id: "#",
-	champion_data: {},
 	challenge_data: {},
 	phase: "None",
 	lobby: [],

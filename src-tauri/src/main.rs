@@ -150,6 +150,13 @@ async fn get_champion_map() -> Value {
 }
 
 #[tauri::command]
+async fn get_champion_map2() -> Value {
+	let champion_url = "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-summary.json";
+	let c = http_generic(champion_url).await.unwrap();
+	return c;
+}
+
+#[tauri::command]
 async fn get_challenges_map() -> Value {
 	let challenges_url = "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/en_gb/v1/challenges.json";
 	let c = http_generic(challenges_url).await.unwrap();
@@ -184,7 +191,7 @@ async fn http_retry(endpoint: &str, state: tauri::State<'_, Data>) -> Result<Val
 			},
 			Err(response) => {
 				println!("http_retry error {}", response.to_string());
-				std::thread::sleep(time::Duration::from_millis(1000))
+				std::thread::sleep(time::Duration::from_millis(1000));
 			}
 		};
 	}
@@ -332,7 +339,8 @@ fn main() {
 			update_champ_select,
 			update_summoner_id,
 			get_riot_id,
-			get_challenges_map
+			get_challenges_map,
+			get_champion_map2
 		])
 		.on_system_tray_event(handle_tray_event)
 		.on_window_event(|event| match event.event() {
