@@ -5,6 +5,8 @@
 
 	export let lockfile_exists: boolean;
 
+	const ignored_challenges = [401104, 401105, 501005, 501000, 501003]; // ignore m5, m7, eternals
+
 	type Champion = {
 		id: number,
 		name: string,
@@ -58,14 +60,11 @@
 		if (challenge.category === "LEGACY") {
 			return false;
 		}
-		const ignored_challenges = [401104, 401105, 501005, 501000, 501003]; // ignore m5, m7, eternals
 		if (ignored_challenges.includes(challenge.id)) {
 			return false;
 		}
 		return (challenge.idListType === "CHAMPION" && challenge.availableIds.length === 0);
 	});
-
-	$: $state.champion_names = Object.fromEntries(Object.entries($state.champion_dragon.data).map(([, value]) => [value.key, value.name]));
 
 	$: if (lockfile_exists) {
 		invoke("get_champion_map").then(champion_data => {
@@ -86,18 +85,21 @@
 		}]));
 	}
 
-	$: table_data = Object.values(champions).sort(table_sort);
+	$: {
+        const championsValues = Object.values(champions);
+        table_data = championsValues.sort(table_sort);
 
-	$: if (Object.values(champions).length > 0 && mastery_data) {
-		console.log("champions", champions);
-		mastery_data.forEach(x => {
-			const id = x.championId;
-			champions[id].id = id;
-			champions[id].mastery_level = x.championLevel || 0;
-			champions[id].mastery_points = x.championPoints || 0;
-			champions[id].chest_granted = x.chestGranted || false;
-		});
-	}
+        if (championsValues.length > 0 && mastery_data) {
+            console.log("champions", champions);
+            mastery_data.forEach(champion => {
+                const id = champion.championId;
+				champions[id].id = id;
+				champions[id].mastery_level = champion.championLevel || 0;
+				champions[id].mastery_points = champion.championPoints || 0;
+				champions[id].chest_granted = champion.chestGranted || false;
+            });
+        }
+    }
 </script>
 
 <main>

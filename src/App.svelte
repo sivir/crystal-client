@@ -36,6 +36,23 @@
 				$state.riot_id = x as string;
 			});
 		});
+
+		invoke("get_champion_map2").then((x: {id: number, name: string}[]) => {
+			$state.champion_names = Object.fromEntries(x.map(a => [a.id, a.name]));
+		});
+
+		
+		invoke("update_all_data").then(() => 
+			invoke("get_challenge_data").then(x => {
+				$state.challenge_data = x as any;
+				console.log("state.challenge_data", $state.challenge_data);
+			})
+		);
+
+		invoke("get_challenge_map").then(x => {
+
+		});
+		invoke("update_gameflow_phase");
 		
 		supabase.functions.invoke("challenge-info").then(x => console.log(JSON.parse(x.data)));
 	}
@@ -93,7 +110,6 @@
 		$state.champ_select = champ_select.myTeam.map(x => x.championId).concat(champ_select.benchChampions.map(x => x.championId));
 	});
 	invoke("process_lockfile");
-	invoke("update_gameflow_phase");
 	invoke("async_watch");
 </script>
 

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import {invoke} from "@tauri-apps/api/tauri";
-	import {state} from "./lib";
+	import {state, supabase} from "./lib";
 	import type {Challenge} from "./lib";
 
 	type GameflowSession = {
@@ -13,6 +13,7 @@
 
 	let gamemode = "";
 	let current_challenges: Challenge[] = [];
+	let lobby_globes = [];
 
 	$: if ($state.phase === "ChampSelect") {
 		invoke("http_retry", {endpoint: "lol-gameflow/v1/session"}).then(x => {
@@ -24,6 +25,15 @@
 	} else {
 		gamemode = "";
 	}
+
+	$: $state.lobby.map(x => {
+		supabase.functions.invoke("get-user", {
+			body: { summoner_name: x },
+		}).then(x => {
+			const data = JSON.parse(x.data);
+			lobby_globes.push(data.riot_data.challenges.filter(x => x.challengeId === 1000)[0].value);
+		});
+	});
 </script>
 
 <main>
