@@ -49,8 +49,33 @@
 			})
 		);
 
-		invoke("get_challenge_map").then(x => {
+		type ChallengeDragon = {
+			challenges: {
+				[key: string]: {
+					name: string;
+					description: string;
+					tags: {
+						isCapstone?: string;
+						isCategory?: string;
+						parent?: string;
+						priority?: number;
+					}
+				}
+			},
+			titles: {
+				[key: string]: {
+					name: string;
+				}
+			},
+		}
 
+		invoke("get_challenge_map").then((x: ChallengeDragon) => {
+			$state.challenge_info = Object.fromEntries(Object.entries(x.challenges).map(([key, value]) => [key, {
+				name: value.name,
+				description: value.description,
+				capstone: value.tags.isCapstone ? value.tags.isCapstone === "Y" : false,
+				parent: value.tags.parent ?? "",
+			}]));
 		});
 		invoke("update_gameflow_phase");
 		
