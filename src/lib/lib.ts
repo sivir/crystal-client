@@ -40,6 +40,7 @@ type Title = {
 
 type State = {
 	riot_id: string;
+	lockfile_exists: boolean;
 	challenge_data: ChallengeData;
 	phase: string;
 	lobby: string[];
@@ -53,10 +54,19 @@ type State = {
 	titles: {
 		[key: string]: Title
 	}
+	challenge_info: {
+		[key: string]: {
+			name: string;
+			description: string;
+			capstone: boolean;
+			parent: string;
+		}
+	}
 }
 
 let state: Writable<State> = writable({
 	riot_id: "#",
+	lockfile_exists: false,
 	challenge_data: {},
 	phase: "None",
 	lobby: [],
@@ -65,7 +75,8 @@ let state: Writable<State> = writable({
 	titles: {},
 	champion_dragon: { data: {} },
 	champ_shards: [],
-	table_challenges: []
+	table_challenges: [],
+	challenge_info: {}
 });
 
 const supabase = createClient('https://jvnhtmgsncslprdrnkth.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp2bmh0bWdzbmNzbHByZHJua3RoIiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTQ2Mjc4ODMsImV4cCI6MjAxMDIwMzg4M30.OOjwsPjGHEc-x8MlhrOX64tJTNENqKqEq2635HKErrk');
