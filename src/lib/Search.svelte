@@ -55,6 +55,15 @@
 			</div>
 		{/each}
 	{/if}
+	{#each Object.entries($state.challenge_info) as a}
+		<div class="card">
+			<div>{a[0]}</div>
+			<div>{a[1].name}</div>
+			<div>{a[1].description}</div>
+			<div>{a[1].capstone}</div>
+			<div>{a[1].parent}</div>
+		</div>
+	{/each}
 </main>
 
 <style>

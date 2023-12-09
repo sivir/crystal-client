@@ -8,7 +8,27 @@
 	import Settings from "./lib/Settings.svelte";
 	import Live from "./lib/Live.svelte";
 	import Search from "./lib/Search.svelte";
-	import {state,supabase} from "./lib/lib";
+	import {state,supabase, type ChallengeData} from "./lib/lib";
+
+	type ChallengeDragon = {
+		challenges: {
+			[key: string]: {
+				name: string;
+				description: string;
+				tags: {
+					isCapstone?: string;
+					isCategory?: string;
+					parent?: string;
+					priority?: number;
+				}
+			}
+		},
+		titles: {
+			[key: string]: {
+				name: string;
+			}
+		},
+	}
 
 	// different side panel pages
 	enum Page {
@@ -37,39 +57,17 @@
 			});
 		});
 
+		invoke("update_all_data").then(() => 
+			invoke("get_challenge_data").then(x => {
+				$state.challenge_data = x as ChallengeData;
+			})
+		);
+
 		invoke("get_champion_map2").then((x: {id: number, name: string}[]) => {
 			$state.champion_names = Object.fromEntries(x.map(a => [a.id, a.name]));
 		});
 
-		
-		invoke("update_all_data").then(() => 
-			invoke("get_challenge_data").then(x => {
-				$state.challenge_data = x as any;
-				console.log("state.challenge_data", $state.challenge_data);
-			})
-		);
-
-		type ChallengeDragon = {
-			challenges: {
-				[key: string]: {
-					name: string;
-					description: string;
-					tags: {
-						isCapstone?: string;
-						isCategory?: string;
-						parent?: string;
-						priority?: number;
-					}
-				}
-			},
-			titles: {
-				[key: string]: {
-					name: string;
-				}
-			},
-		}
-
-		invoke("get_challenge_map").then((x: ChallengeDragon) => {
+		invoke("get_challenges_map").then((x: ChallengeDragon) => {
 			$state.challenge_info = Object.fromEntries(Object.entries(x.challenges).map(([key, value]) => [key, {
 				name: value.name,
 				description: value.description,
@@ -80,6 +78,8 @@
 		invoke("update_gameflow_phase");
 		
 		supabase.functions.invoke("challenge-info").then(x => console.log(JSON.parse(x.data)));
+
+		invoke("async_watch");
 	}
 	
 	type ChampSelect = {
@@ -135,7 +135,6 @@
 		$state.champ_select = champ_select.myTeam.map(x => x.championId).concat(champ_select.benchChampions.map(x => x.championId));
 	});
 	invoke("process_lockfile");
-	invoke("async_watch");
 </script>
 
 <main>

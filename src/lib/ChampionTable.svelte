@@ -35,7 +35,7 @@
 
 	function refresh() {
 		console.log("refresh called");
-		//invoke("process_lockfile");
+		invoke("process_lockfile");
 		invoke("update_all_data").then(() => {
 			invoke("get_challenge_data").then(challenge_data => {
 				invoke("get_champion_data").then(champion_data => {
