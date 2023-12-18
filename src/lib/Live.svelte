@@ -28,7 +28,7 @@
 
 	$: $state.lobby.map(x => {
 		supabase.functions.invoke("get-user", {
-			body: { summoner_name: x },
+			body: { summoner_name: x, riot_id: x },
 		}).then(x => {
 			const data = JSON.parse(x.data);
 			lobby_globes.push(data.riot_data.challenges.filter(x => x.challengeId === 1000)[0].value);

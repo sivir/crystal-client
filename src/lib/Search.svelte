@@ -39,7 +39,7 @@
 	search: <input bind:value={search} />
 	<button on:click={() => {
 		supabase.functions.invoke("get-user", {
-			body: { summoner_name: search },
+			body: { riot_id: search },
 		}).then(x => {
 			temp = x.data;
 			data = JSON.parse(x.data);
@@ -56,13 +56,12 @@
 		{/each}
 	{/if}
 	{#each Object.entries($state.challenge_info) as a}
-		<div class="card">
-			<div>{a[0]}</div>
-			<div>{a[1].name}</div>
-			<div>{a[1].description}</div>
-			<div>{a[1].capstone}</div>
-			<div>{a[1].parent}</div>
-		</div>
+		{#if a[1].capstone === false}
+			<div class="card">
+				<div>{a[1].name}</div>
+				<div>{a[1].description}</div>
+			</div>
+		{/if}
 	{/each}
 </main>
 

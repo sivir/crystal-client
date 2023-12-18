@@ -12,19 +12,20 @@ serve(async (req) => {
 
 	// extract id from request
 	const x = await req.json();
-	const { summoner_name } = x;
+	const { riot_id } = x;
 
 	try {
 		// check if user exists in db
-		const summoner_response = await fetch(`https://${region}.api.riotgames.com/lol/summoner/v4/summoners/by-name/${summoner_name}?api_key=${riot_api_key}`);
+		const id = riot_id.split("#");
+		const summoner_response = await fetch(`https://americas.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${id[0]}/${id[1]}?api_key=${riot_api_key}`);
 		const summoner_data = await summoner_response.json();
-		const id = summoner_data.puuid;
+		const puuid = summoner_data.puuid;
 		console.log("summoner_data", summoner_data);
 		const res = await get_user(id);
 		console.log("res", res);
 		// if not, update db with riot data
 		if (res.length === 0) {
-			const data = await update_riot_data(id);
+			const data = await update_riot_data(puuid);
 			return new Response(JSON.stringify({riot_data: data, lcu_data: {}}), { headers: cors_headers });
 		} else {
 			// check when riot data was last updated
@@ -33,7 +34,7 @@ serve(async (req) => {
 			const diff = now.getTime() - last_updated.getTime();
 			// if it's been 10 minutes, update it
 			if (diff > 10 * 60 * 1000) {
-				const data = await update_riot_data(id);
+				const data = await update_riot_data(puuid);
 				return new Response(JSON.stringify({riot_data: data, lcu_data: res[0].lcu_data}), { headers: cors_headers });
 			} else {
 				// otherwise, return it
