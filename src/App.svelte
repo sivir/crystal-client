@@ -116,6 +116,8 @@
 		$state.phase = gameflow;
 		if (gameflow === "ChampSelect") {
 			invoke("update_champ_select");
+		} else if (gameflow === "None") {
+			$state.lobby = [];
 		}
 	});
 	listen("lobby", x => {
@@ -125,6 +127,7 @@
 		Promise.all(lobby.map(x => invoke("http_retry", {endpoint: "lol-summoner/v2/summoners/puuid/" + x.puuid}))).then((qwe: any) => {
 			console.log(qwe);
 			$state.lobby = qwe.map(x => x.gameName + "#" + x.tagLine);
+			console.log("state_lobby", $state.lobby);
 		});
 	});
 	listen("champ_select", x => {
