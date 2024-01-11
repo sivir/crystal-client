@@ -121,11 +121,10 @@
 	listen("lobby", x => {
 		console.log("lobby", x);
 		const lobby = x.payload as Lobby[];
-		$state.lobby = lobby.map(x => x.summonerName);
-		lobby.forEach(element => {
-			invoke("http_retry", {endpoint: "lol-summoner/v2/summoners/puuid/" + element.puuid}).then(qwe => {
-				console.log(qwe);
-			});
+		$state.lobby = [];
+		Promise.all(lobby.map(x => invoke("http_retry", {endpoint: "lol-summoner/v2/summoners/puuid/" + x.puuid}))).then((qwe: any) => {
+			console.log(qwe);
+			$state.lobby = qwe.map(x => x.gameName + "#" + x.tagLine);
 		});
 	});
 	listen("champ_select", x => {

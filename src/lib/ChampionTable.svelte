@@ -25,8 +25,9 @@
 	let table_data: Champion[] = [];
 	let mastery_data: MasteryData[];
 	const default_sort = (a: Champion, b : Champion) => {
-		if (b.mastery_level === a.mastery_level)
+		if (b.mastery_level === a.mastery_level) {
 			return b.mastery_points - a.mastery_points;
+		}
 		return b.mastery_level - a.mastery_level;
 	};
 	let table_sort = default_sort;
@@ -85,21 +86,18 @@
 		}]));
 	}
 
-	$: {
-        const championsValues = Object.values(champions);
-        table_data = championsValues.sort(table_sort);
-
-        if (championsValues.length > 0 && mastery_data) {
-            console.log("champions", champions);
-            mastery_data.forEach(champion => {
-                const id = champion.championId;
-				champions[id].id = id;
-				champions[id].mastery_level = champion.championLevel || 0;
-				champions[id].mastery_points = champion.championPoints || 0;
-				champions[id].chest_granted = champion.chestGranted || false;
-            });
-        }
-    }
+	$: table_data = Object.values(champions).sort(table_sort);
+	
+	$: if (Object.values(champions).length > 0 && mastery_data) {
+		console.log("champions", champions);
+		mastery_data.forEach(x => {
+			const id = x.championId;
+			champions[id].id = id;
+			champions[id].mastery_level = x.championLevel || 0;
+			champions[id].mastery_points = x.championPoints || 0;
+			champions[id].chest_granted = x.chestGranted || false;
+		});
+	}
 </script>
 
 <main>

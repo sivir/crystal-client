@@ -14,6 +14,7 @@
 	let gamemode = "";
 	let current_challenges: Challenge[] = [];
 	let lobby_globes = [];
+	let player_globe_challenges = {};
 
 	$: if ($state.phase === "ChampSelect") {
 		invoke("http_retry", {endpoint: "lol-gameflow/v1/session"}).then(x => {
@@ -26,12 +27,14 @@
 		gamemode = "";
 	}
 
+	$: lobby_globes = Object.entries($state.challenge_info).filter(x => x[1].parent === "303500").map(x => x[0]);
+
 	$: $state.lobby.map(x => {
 		supabase.functions.invoke("get-user", {
-			body: { summoner_name: x, riot_id: x },
-		}).then(x => {
-			const data = JSON.parse(x.data);
-			lobby_globes.push(data.riot_data.challenges.filter(x => x.challengeId === 1000)[0].value);
+			body: { riot_id: x },
+		}).then(res => {
+			const data = JSON.parse(res.data);
+			player_globe_challenges[x] = Object.entries(data.riot_data.challenges).filter((x: any) => lobby_globes.includes(x.challengeId as string)).map(x => x[1]);
 		});
 	});
 </script>
@@ -42,6 +45,8 @@
 	<p>current lobby: {JSON.stringify($state.lobby)}</p>
 	<p>current champ select: {JSON.stringify($state.champ_select.map(x => $state.champion_names[x]))}</p>
 	<p>other stuff: {JSON.stringify($state.table_challenges.filter(x => x.gameModes.includes("ARAM")).map(x => x.name))}</p>
+	<p>lbyg: {JSON.stringify(lobby_globes)}</p>
+	<p>pgc: {JSON.stringify(player_globe_challenges)}</p>
 	<table>
 		<tr>
 			<td>Champion</td>
