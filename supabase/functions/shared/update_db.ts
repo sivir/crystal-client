@@ -4,7 +4,7 @@ import * as postgres from 'https://deno.land/x/postgres@v0.14.2/mod.ts';
 const database_url = Deno.env.get('SUPABASE_DB_URL')!
 const riot_api_key = Deno.env.get('RIOT_API_KEY')!
 
-const pool = new postgres.Pool(database_url, 3, true);
+const pool = new postgres.Pool(database_url, 10, true);
 
 const cors_headers = {
 	'Access-Control-Allow-Origin': '*',

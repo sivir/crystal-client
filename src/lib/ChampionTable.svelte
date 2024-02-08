@@ -126,6 +126,7 @@
 						}}>{challenge.name}</button></div>
 					</td>
 				{/each}
+				<td>eternal rekindled</td>
 			</tr>
 			</thead>
 			{#each table_data as champion, i}

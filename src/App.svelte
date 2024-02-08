@@ -8,6 +8,7 @@
 	import Settings from "./lib/Settings.svelte";
 	import Live from "./lib/Live.svelte";
 	import Search from "./lib/Search.svelte";
+	import Timeline from "./lib/Timeline.svelte";
 	import {state,supabase, type ChallengeData} from "./lib/lib";
 
 	type ChallengeDragon = {
@@ -39,6 +40,7 @@
 		live, // live lobby then champ select data
 		eternals, // eternals progression and collection
 		settings, // settings
+		time // time sensitive challenge list (will probably have actual descriptions)
 	}
 
 	let lockfile_exists = false;
@@ -165,6 +167,7 @@
 				<button on:click={() => page = Page.settings}>settings</button>
 				<button on:click={() => page = Page.search}>search</button>
 				<button on:click={() => page = Page.live}>live {#if $state.phase === "Lobby" || $state.phase === "ChampSelect"}🟢{/if}</button>
+				<button on:click={() => page = Page.time}>time-sensitive</button>
 			</div>
 		</div>
 
@@ -184,6 +187,9 @@
 			</div>
 			<div class="test" hidden={page !== Page.live}>
 				<Live/>
+			</div>
+			<div class="test" hidden={page !== Page.time}>
+				<Timeline/>
 			</div>
 		</div>
 	</div>
