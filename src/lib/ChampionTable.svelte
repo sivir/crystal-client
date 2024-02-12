@@ -159,7 +159,23 @@
 					</tr>
 				{/if}
 			{/each}
+			<tr>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				{#each $state.table_challenges as challenge}
+							<td>
+								{challenge.completedIds.length} / {Object.values(champions).length}
+							</td>
+						{/each}
+			</tr>
 		</table>
+		<p>
+			m7: {table_data.filter(x => x.mastery_level === 7).length} / {Object.values(champions).length}
+			m5+: {table_data.filter(x => x.mastery_level >= 5).length} / {Object.values(champions).length}
+			total mastery points: {table_data.reduce((acc, curr) => acc + curr.mastery_points, 0)}
+		</p>
 	</div>
 </main>
 

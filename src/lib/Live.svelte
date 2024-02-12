@@ -49,20 +49,20 @@
 	$: lobby_globes = Object.entries($state.challenge_info).filter(x => x[1].parent === "303500").map(x => x[0]);
 
 	$: Promise.all(
-    $state.lobby.map(x => 
-        supabase.functions.invoke("get-user", {
-            body: { riot_id: x },
-        }).then(res => {
-            const data: {riot_data: RiotData} = JSON.parse(res.data);
-            return Object.entries(data.riot_data.challenges).filter(x => lobby_globes.includes(x[1].challengeId.toString())).map(x => x[1]);
-        })
-    )
-).then(results => {
-    player_globe_challenges = results.reduce((acc, curr, index) => {
-        acc[$state.lobby[index]] = curr;
-        return acc;
-    }, {});
-});
+		$state.lobby.map(x => 
+			supabase.functions.invoke("get-user", {
+				body: { riot_id: x },
+			}).then(res => {
+				const data: {riot_data: RiotData} = JSON.parse(res.data);
+				return Object.entries(data.riot_data.challenges).filter(x => lobby_globes.includes(x[1].challengeId.toString())).map(x => x[1]);
+			})
+		)
+	).then(results => {
+		player_globe_challenges = results.reduce((acc, curr, index) => {
+			acc[$state.lobby[index]] = curr;
+			return acc;
+		}, {});
+	});
 
 	$: globe_display = Object.entries(player_globe_challenges).map(x => {
 		const entry: TempGlobeDisplayEntry = {
@@ -77,12 +77,12 @@
 </script>
 
 <main>
-	<p>gamemode: {gamemode}</p>
+	<!--<p>gamemode: {gamemode}</p>
 	<p>state: {$state.phase}</p>
 	<p>current lobby: {JSON.stringify($state.lobby)}</p>
 	<p>current champ select: {JSON.stringify($state.champ_select.map(x => $state.champion_names[x]))}</p>
 	<p>other stuff: {JSON.stringify($state.table_challenges.filter(x => x.gameModes.includes("ARAM")).map(x => x.name))}</p>
-	<p>pgc: {JSON.stringify(player_globe_challenges)}</p>
+	<p>pgc: {JSON.stringify(player_globe_challenges)}</p>-->
 	<table>
 		<tr>
 			<td></td>

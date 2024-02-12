@@ -167,7 +167,7 @@
 				<button on:click={() => page = Page.settings}>settings</button>
 				<button on:click={() => page = Page.search}>search</button>
 				<button on:click={() => page = Page.live}>live {#if $state.phase === "Lobby" || $state.phase === "ChampSelect"}🟢{/if}</button>
-				<button on:click={() => page = Page.time}>time-sensitive</button>
+				<!--<button on:click={() => page = Page.time}>time-sensitive</button>-->
 			</div>
 		</div>
 
