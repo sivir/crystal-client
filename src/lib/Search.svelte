@@ -111,14 +111,3 @@
 		</table>
 	{/if}
 </main>
-
-<style>
-	.card {
-		border: 1px solid #ccc;
-		border-radius: 4px;
-		margin: 4px;
-		padding: 4px;
-		display: flex;
-		flex-direction: column;
-	}
-</style>

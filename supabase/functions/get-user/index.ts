@@ -15,6 +15,7 @@ serve(async (req) => {
 	const { riot_id } = x;
 
 	try {
+		const force = false;
 		// check if user exists in db
 		const id = riot_id.split("#");
 		console.log("id", id)
@@ -33,8 +34,8 @@ serve(async (req) => {
 			const last_updated = new Date(res[0].last_update_riot);
 			const now = new Date();
 			const diff = now.getTime() - last_updated.getTime();
-			// if it's been 10 minutes, update it
-			if (diff > 10 * 60 * 1000) {
+			// if it's been 10 minutes, update it or if we want to force update
+			if (diff > 10 * 60 * 1000 || (force && diff > 60 * 1000)) {
 				const data = await update_riot_data(puuid);
 				return new Response(JSON.stringify({riot_data: data, lcu_data: res[0].lcu_data}), { headers: cors_headers });
 			} else {

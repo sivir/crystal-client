@@ -98,6 +98,12 @@
 			champions[id].chest_granted = x.chestGranted || false;
 		});
 	}
+
+	const mastery_colors: { [key: number]: string } = {
+		5: "red",
+		6: "purple",
+		7: "#00ccff"
+	};
 </script>
 
 <main>
@@ -138,7 +144,7 @@
 				{#if search === "" || champion.name.toLowerCase().includes(search.toLowerCase())}
 					<tr>
 						<td>{champion.name}</td>
-						<td>{champion.mastery_level}</td>
+						<td style="color:{mastery_colors[champion.mastery_level] ?? "white"}">{champion.mastery_level}</td>
 						<td>{champion.mastery_points}</td>
 						<td>{#if champion.chest_granted}✅{:else}❌{/if}</td>
 						{#each $state.table_challenges as challenge}

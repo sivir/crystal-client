@@ -1,3 +1,3 @@
 <main>
-	settings
+	no settings yet lol
 </main>

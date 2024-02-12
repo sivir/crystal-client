@@ -3,7 +3,7 @@
     <p>first dragon before 10 mins</p>
     <p>80 minions within 10 mins</p>
     <p>70 jungle cs before 10 mins</p>
-    <p>kill enemy jungler (as jungler) within thier own jungle before 20 mins</p>
+    <p>kill enemy jungler (as jungler) within their own jungle before 10 mins</p>
     <p>first turret before 10</p>
     <p>kills outside lane (as laner), takedowns on laners (as jungler), get takedown on all lanes (as laner) before 10 mins</p>
     <p>ace between minion spawn and 15 mins</p>
