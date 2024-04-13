@@ -9,6 +9,7 @@
 	import Live from "./lib/Live.svelte";
 	import Search from "./lib/Search.svelte";
 	import Timeline from "./lib/Timeline.svelte";
+	import Eternals from "./lib/Eternals.svelte";
 	import {state,supabase, type ChallengeData} from "./lib/lib";
 
 	type ChallengeDragon = {
@@ -21,6 +22,12 @@
 					isCategory?: string;
 					parent?: string;
 					priority?: number;
+				};
+				thresholds: {
+					[key: string]: {
+						value: number;
+						threshold: number;
+					}
 				}
 			}
 		},
@@ -75,6 +82,7 @@
 				description: value.description,
 				capstone: value.tags.isCapstone ? value.tags.isCapstone === "Y" : false,
 				parent: value.tags.parent ?? "",
+				thresholds: value.thresholds ?? {"MASTER": {value: 0}},
 			}]));
 		});
 		invoke("update_gameflow_phase");
@@ -167,7 +175,8 @@
 				<button on:click={() => page = Page.settings}>settings</button>
 				<button on:click={() => page = Page.search}>search</button>
 				<button on:click={() => page = Page.live}>live {#if $state.phase === "Lobby" || $state.phase === "ChampSelect"}🟢{/if}</button>
-				<!--<button on:click={() => page = Page.time}>time-sensitive</button>-->
+				<button on:click={() => page = Page.time}>time-sensitive</button>
+				<button on:click={() => page = Page.eternals}>eternals</button>
 			</div>
 		</div>
 
@@ -190,6 +199,9 @@
 			</div>
 			<div class="test" hidden={page !== Page.time}>
 				<Timeline/>
+			</div>
+			<div class="test" hidden={page !== Page.eternals}>
+				<Eternals/>
 			</div>
 		</div>
 	</div>

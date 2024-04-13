@@ -12,8 +12,8 @@ serve(async (req) => {
 		const data = await fetch(`https://na1.api.riotgames.com/lol/challenges/v1/challenges/config?api_key=${riot_api_key}`);
 		const challenge_data = await data.json();
 		console.log(challenge_data);
-        return new Response(JSON.stringify(challenge_data), { headers: cors_headers });
-    } catch (err) {
+		return new Response(JSON.stringify(challenge_data), { headers: cors_headers });
+	} catch (err) {
 		console.error(err);
 		return new Response(String(err?.message ?? err), { status: 500, headers: cors_headers });
 	}

@@ -165,10 +165,10 @@
 				<td></td>
 				<td></td>
 				{#each $state.table_challenges as challenge}
-							<td>
-								{challenge.completedIds.length} / {Object.values(champions).length}
-							</td>
-						{/each}
+					<td>
+						{challenge.completedIds.length} / {Object.values(champions).length}
+					</td>
+				{/each}
 			</tr>
 		</table>
 		<p>

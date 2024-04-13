@@ -60,6 +60,11 @@ type State = {
 			description: string;
 			capstone: boolean;
 			parent: string;
+			thresholds: {
+				[key: string]: {
+					value: number;
+				}
+			}
 		}
 	}
 }

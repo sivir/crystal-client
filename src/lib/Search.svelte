@@ -1,5 +1,6 @@
 <script lang="ts">
 	import {supabase, state} from "./lib";
+
 	let search: string = "";
 	let search2 = "";
 	let temp2 = "";
@@ -16,7 +17,6 @@
 		},
 		lcu_data: {},
 	};
-
 	let mapdata1, mapdata2: {
 		[key: string]: {
 			value: number;
@@ -73,7 +73,7 @@
 			data = JSON.parse(x.data);
 			console.log("get_user", data);
 		});
-	}} >search riot id</button>
+	}}>search riot id</button>
 	{#if temp !== ""}
 		compare: <input bind:value={search2} />
 		<button on:click={() => {
@@ -84,7 +84,7 @@
 				data2 = JSON.parse(temp2);
 				console.log("get_user2", data2);
 			});
-		}} >search riot id</button>
+		}}>search riot id</button>
 	{/if}
 	{#if temp !== ""}
 		<table>
@@ -101,6 +101,7 @@
 					<tr>
 						<td>{a[1].name}</td>
 						<td>{a[1].description}</td>
+						<td>{$state.challenge_info[a[0]].thresholds["MASTER"].value}</td>
 						<td>{mapdata1[a[0]]?.value}</td>
 						{#if temp2 !== ""}
 							<td>{mapdata2[a[0]]?.value}</td>
