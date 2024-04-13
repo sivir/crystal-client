@@ -28,7 +28,8 @@
 						value: number;
 						threshold: number;
 					}
-				}
+				},
+				seasons: [number];
 			}
 		},
 		titles: {
@@ -83,6 +84,7 @@
 				capstone: value.tags.isCapstone ? value.tags.isCapstone === "Y" : false,
 				parent: value.tags.parent ?? "",
 				thresholds: value.thresholds ?? {"MASTER": {value: 0}},
+				seasonal: value.seasons.length > 0,
 			}]));
 		});
 		invoke("update_gameflow_phase");

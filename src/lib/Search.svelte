@@ -8,12 +8,18 @@
 	let data = {
 		riot_data: {
 			challenges: [],
+			totalPoints: {
+				current: 0
+			}
 		},
 		lcu_data: {},
 	};
 	let data2 = {
 		riot_data: {
 			challenges: [],
+			totalPoints: {
+				current: 0
+			}
 		},
 		lcu_data: {},
 	};
@@ -61,6 +67,32 @@
 		};
 		return entry;
 	});
+
+	let sum_m = 0;
+	let sum_1 = 0;
+	let sum_2 = 0;
+
+	function calculate_sums() {
+		sum_m = 0;
+		sum_1 = 0;
+		sum_2 = 0;
+		Object.entries($state.challenge_info).forEach(a => {
+			if (a[1].capstone === false && a[1].seasonal == false) {
+				const x = a[1].thresholds["MASTER"];
+				if (x != null) {
+					sum_m++;
+					if (mapdata1 != null) {
+						sum_1 += ((mapdata1[a[0]]?.value ?? 0) / x.value > 1 ? 1 : (mapdata1[a[0]]?.value ?? 0) / x.value);
+					}
+					if (mapdata2 != null) {
+						sum_2 += ((mapdata2[a[0]]?.value ?? 0) / x.value > 1 ? 1 : (mapdata2[a[0]]?.value ?? 0) / x.value);
+					}
+				}
+			}
+		});
+	}
+
+	$: (mapdata1 || mapdata2) && calculate_sums();
 </script>
 
 <main>
@@ -96,12 +128,28 @@
 					<th>value2</th>
 				{/if}
 			</tr>
+			<tr>
+				<td>points</td>
+				<td>total challenge points</td>
+				<td>{data.riot_data.totalPoints.current}</td>
+				{#if temp2 !== ""}
+					<td>{data2.riot_data.totalPoints.current}</td>
+				{/if}
+			</tr>
+			<tr>
+				<td>sum</td>
+				<td>represents the total number of challenges that can be gotten to masters, a rough estimate of overall how far you are done: {sum_m}</td>
+				<td>{sum_1}</td>
+				{#if temp2 !== ""}
+					<td>{sum_2}</td>
+				{/if}
+			</tr>
 			{#each Object.entries($state.challenge_info) as a}
 				{#if a[1].capstone === false}
 					<tr>
 						<td>{a[1].name}</td>
 						<td>{a[1].description}</td>
-						<td>{$state.challenge_info[a[0]].thresholds["MASTER"].value}</td>
+						<!--<td>{JSON.stringify($state.challenge_info[a[0]].thresholds["MASTER"])}</td>-->
 						<td>{mapdata1[a[0]]?.value}</td>
 						{#if temp2 !== ""}
 							<td>{mapdata2[a[0]]?.value}</td>

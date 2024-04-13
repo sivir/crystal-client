@@ -64,7 +64,8 @@ type State = {
 				[key: string]: {
 					value: number;
 				}
-			}
+			},
+			seasonal: boolean;
 		}
 	}
 }
